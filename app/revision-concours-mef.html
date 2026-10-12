@@ -53,6 +53,12 @@
   --info-soft: #e5f2fe;
   --net: #5b4bff;
   --host: #ff7a1a;
+  --deep: #3d2fd6;
+  --deep-2: #6d4bff;
+  --accent-2: #ff4d6d;
+  --glow: 91, 75, 255;
+  --hero-grad: linear-gradient(135deg, var(--deep) 0%, var(--deep-2) 45%, var(--accent) 130%);
+  --logo-grad: linear-gradient(135deg, var(--primary), var(--accent));
   --shadow-sm: 0 1px 2px rgba(20, 24, 60, .06), 0 1px 1px rgba(20, 24, 60, .04);
   --shadow: 0 6px 24px -8px rgba(30, 30, 90, .18), 0 2px 6px rgba(30, 30, 90, .06);
   --shadow-lg: 0 24px 60px -18px rgba(30, 30, 90, .35);
@@ -104,6 +110,42 @@
   --shadow-lg: 0 24px 60px -18px rgba(0, 0, 0, .75);
   color-scheme: dark;
 }
+
+/* Palette « Niger » 🇳🇪 : orange, blanc et vert du drapeau, disque orange du soleil */
+:root[data-palette="niger"] {
+  --primary: #0b8a3e; --primary-2: #16a653; --primary-soft: #e3f5ea;
+  --accent: #e05206; --accent-2: #f39233; --accent-soft: #fdebde;
+  --net: #0b8a3e; --host: #e05206;
+  --deep: #075c2a; --deep-2: #0b8a3e; --glow: 11, 138, 62;
+  --hero-grad: linear-gradient(140deg, #d24c05 0%, #e05206 28%, #0e8f42 78%, #075c2a 100%);
+  --logo-grad: linear-gradient(180deg, #e05206 0 33%, #ffffff 33% 66%, #0b8a3e 66% 100%);
+  --bg-grad: radial-gradient(1200px 600px at 100% -10%, rgba(224, 82, 6, .11) 0%, transparent 60%),
+             radial-gradient(900px 500px at -10% 110%, rgba(11, 138, 62, .12) 0%, transparent 55%);
+}
+:root[data-palette="niger"][data-theme="dark"] {
+  --primary: #2fc56a; --primary-2: #5cd98e; --primary-soft: #11351f;
+  --accent: #ff7a2e; --accent-2: #ffa25a; --accent-soft: #3b2214;
+  --net: #2fc56a; --host: #ff8a3d; --deep: #064d23; --deep-2: #0b7a37;
+  --bg-grad: radial-gradient(1100px 600px at 100% -10%, rgba(224, 82, 6, .16) 0%, transparent 60%),
+             radial-gradient(900px 500px at -10% 110%, rgba(11, 138, 62, .16) 0%, transparent 55%);
+}
+/* logo aux couleurs du drapeau : bandes orange / blanche / verte + disque orange */
+:root[data-palette="niger"] .brand-logo { color: transparent; position: relative; text-shadow: none; box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(0, 0, 0, .08); }
+:root[data-palette="niger"] .brand-logo::after { content: ""; position: absolute; width: 26%; height: 26%; border-radius: 50%; background: #e05206; left: 37%; top: 37%; }
+:root[data-palette="niger"] .hero::before, :root[data-palette="niger"] .guided-hero::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; z-index: 2;
+  background: linear-gradient(180deg, #e05206 0 33%, #ffffff 33% 66%, #0b8a3e 66% 100%);
+}
+:root[data-palette="niger"] .guided-hero { position: relative; overflow: hidden; }
+:root[data-palette="niger"] .sidebar { border-top: 5px solid; border-image: linear-gradient(90deg, #e05206 0 33%, #ffffff 33% 66%, #0b8a3e 66% 100%) 1; }
+:root[data-palette="niger"] .topbar { box-shadow: inset 0 3px 0 #e05206; }
+.pal-pick { display: flex; gap: .5rem; flex-wrap: wrap; }
+.pal-pick button { display: flex; align-items: center; gap: .55rem; padding: .5rem .8rem; border-radius: 13px; border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-family: var(--font-display); font-weight: 600; }
+.pal-pick button.on { border-color: var(--primary); background: var(--primary-soft); }
+.pal-sw { display: inline-flex; width: 34px; height: 22px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.pal-sw i { flex: 1; }
+.pal-flag { width: 34px; height: 22px; border-radius: 4px; position: relative; background: linear-gradient(180deg, #e05206 0 33%, #fff 33% 66%, #0b8a3e 66% 100%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15); }
+.pal-flag::after { content: ""; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #e05206; left: 14px; top: 8px; }
 
 /* Choix de police (Profil → Réglages) */
 :root[data-font="lexend"] { --font: "Lexend", var(--font-sys); --body-w: 360; --body-size: 1rem; }
@@ -184,9 +226,9 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .brand:hover { text-decoration: none; }
 .brand-logo {
   width: 42px; height: 42px; border-radius: 13px; flex: none;
-  background: linear-gradient(135deg, var(--primary), #ff7a1a);
+  background: var(--logo-grad);
   display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem;
-  box-shadow: 0 6px 18px -6px rgba(91, 75, 255, .7); text-decoration: none !important;
+  box-shadow: 0 6px 18px -6px rgba(var(--glow), .7); text-decoration: none !important;
 }
 .brand-text { display: flex; flex-direction: column; min-width: 0; }
 .brand-name { font-family: var(--font-display); font-weight: 700; line-height: 1.15; font-size: 1.05rem; letter-spacing: -.01em; }
@@ -505,7 +547,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .dev-av {
   width: 64px; height: 64px; border-radius: 20px; flex: none; display: grid; place-items: center; color: #fff;
   font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; letter-spacing: .02em;
-  background: linear-gradient(135deg, var(--primary), #ff7a1a); box-shadow: 0 10px 24px -10px var(--primary);
+  background: var(--logo-grad); box-shadow: 0 10px 24px -10px var(--primary);
 }
 .dev-role { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
 .dev-links { display: grid; gap: .5rem; }
@@ -587,7 +629,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .prep-notes b { font-size: 1.25rem; font-weight: 700; margin-left: .15rem; }
 .prep-hero {
   display: flex; gap: clamp(1rem, 3vw, 2rem); align-items: center; flex-wrap: wrap; color: #fff; border-radius: 24px;
-  padding: clamp(1.15rem, 2.6vw, 2rem); background: linear-gradient(135deg, #3d2fd6 0%, #6d4bff 50%, #14b8a6 130%); box-shadow: var(--shadow-lg);
+  padding: clamp(1.15rem, 2.6vw, 2rem); background: linear-gradient(135deg, var(--deep) 0%, var(--deep-2) 50%, #14b8a6 130%); box-shadow: var(--shadow-lg);
 }
 .prep-hero.risk { background: linear-gradient(135deg, #9f1239 0%, #e11d48 55%, #f59e0b 130%); }
 .prep-hero .grow { min-width: 16rem; }
@@ -597,7 +639,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .ph-notes small { display: block; font-size: .72rem; opacity: .85; font-weight: 700; }
 .ph-notes b { font-family: var(--font-display); font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
 .ph-notes span { opacity: .8; margin-left: .15rem; }
-.ph-notes .ph-avg { background: #fff; color: #3d2fd6; }
+.ph-notes .ph-avg { background: #fff; color: var(--deep); }
 .prep-row { display: flex; gap: .7rem; align-items: flex-start; }
 .pr-ico { font-size: 1.3rem; width: 1.8rem; text-align: center; padding-top: .1rem; }
 .prep-row .bar { margin: .3rem 0 .2rem; }
@@ -728,7 +770,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .btn:active { transform: translateY(1px) scale(.99); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn.primary { --b: linear-gradient(135deg, var(--primary), var(--primary-2)); --c: var(--on-primary); --bd: transparent; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 6px 16px -8px var(--primary); }
-.btn.accent { background: linear-gradient(135deg, #ff7a1a, #ff4d6d); --c: #fff; --bd: transparent; box-shadow: 0 6px 16px -8px #ff7a1a; }
+.btn.accent { background: linear-gradient(135deg, var(--accent), var(--accent-2)); --c: #fff; --bd: transparent; box-shadow: 0 6px 16px -8px var(--accent); }
 .btn.ok { --b: var(--ok); --c: #fff; --bd: transparent; }
 .btn.ko { --b: var(--ko); --c: #fff; --bd: transparent; }
 .btn.ghost { --b: transparent; --bd: transparent; --c: var(--text-2); }
@@ -752,7 +794,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 
 .bar { height: 9px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
 .bar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--primary), var(--primary-2)); transition: width .6s cubic-bezier(.2, .8, .2, 1); }
-.bar.acc > i { background: linear-gradient(90deg, #ff7a1a, #ff4d6d); }
+.bar.acc > i { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
 .bar.ok > i { background: linear-gradient(90deg, #10a861, #39d98a); }
 .bar.thin { height: 6px; }
 
@@ -812,7 +854,7 @@ table.t td.mono, table.t .mono { white-space: nowrap; }
 /* ---------- Hero / dashboard ---------- */
 .hero {
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #3d2fd6 0%, #6d4bff 45%, #ff7a1a 130%);
+  background: var(--hero-grad);
   color: #fff; border-radius: 24px; padding: clamp(1.15rem, 2.5vw, 2rem) clamp(1.1rem, 2.8vw, 2.2rem); box-shadow: var(--shadow-lg);
 }
 .hero::after {
@@ -824,7 +866,7 @@ table.t td.mono, table.t .mono { white-space: nowrap; }
 .hero .count { font-family: var(--font-display); font-size: clamp(2.4rem, 1.6rem + 3vw, 3.6rem); font-weight: 800; line-height: 1; letter-spacing: -.04em; }
 .hero .count small { display: inline-block; font-size: clamp(.9rem, .8rem + .3vw, 1.05rem); font-weight: 500; opacity: .9; margin-left: .4rem; letter-spacing: 0; vertical-align: .35em; }
 .hero .btn { --b: rgba(255, 255, 255, .16); --c: #fff; --bd: rgba(255, 255, 255, .3); }
-.hero .btn.white { --b: #fff; --c: #3d2fd6; --bd: #fff; }
+.hero .btn.white { --b: #fff; --c: var(--deep); --bd: #fff; }
 .hero-cta-sub { font-weight: 500; opacity: .75; font-size: .82em; max-width: 26ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 600px) { .hero-cta .btn { flex: 1 1 auto; } .hero-cta .btn.lg { flex-basis: 100%; } }
 .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; position: relative; z-index: 1; }
@@ -1152,7 +1194,7 @@ input[type=range] { width: 100%; accent-color: var(--primary); }
 }
 .toast .ti { font-size: 1.4rem; }
 .toast.out { animation: toastOut .3s ease forwards; }
-.toast.badge { background: linear-gradient(135deg, #3d2fd6, #6d4bff); color: #fff; border: 0; }
+.toast.badge { background: linear-gradient(135deg, var(--deep), var(--deep-2)); color: #fff; border: 0; }
 .toast.badge .muted { color: rgba(255, 255, 255, .8); }
 .modal-bg {
   position: fixed; inset: 0; z-index: 90; background: rgba(8, 10, 25, .55); backdrop-filter: blur(4px);
@@ -1222,7 +1264,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
 .print-doc .co { background: #f7f7fb !important; border: 1px solid #ddd !important; padding: .4rem .6rem; margin: .4rem 0; }
 .pd-cover { display: flex; gap: 1rem; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: .8rem; margin-bottom: 1rem; }
 .pd-cover p { margin: .2rem 0 0; color: #555; font-size: .85rem; }
-.pd-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #5b4bff, #ff7a1a); color: #fff; display: grid; place-items: center; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pd-logo { width: 46px; height: 46px; border-radius: 12px; background: var(--logo-grad); color: #fff; display: grid; place-items: center; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pd-mod { margin-bottom: 1.6rem; }
 .pd-sub { color: #666; font-size: .82rem; margin-bottom: .5rem; }
 .pd-ess { columns: 2 320px; column-gap: 1.6rem; }
@@ -1569,7 +1611,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
       document.body.appendChild(cv);
       const g = cv.getContext('2d');
       g.scale(dpr, dpr);
-      const colors = ['#5b4bff', '#ff7a1a', '#10a861', '#ffd23f', '#ff4d6d', '#1f86e8'];
+      const colors = document.documentElement.dataset.palette === 'niger' ? ['#e05206', '#ffffff', '#0b8a3e', '#f39233', '#16a653', '#e05206'] : ['#5b4bff', '#ff7a1a', '#10a861', '#ffd23f', '#ff4d6d', '#1f86e8'];
       const n = Math.round(140 * (power || 1));
       const W = window.innerWidth, H = window.innerHeight;
       const parts = [];
@@ -1910,7 +1952,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   const defaults = () => ({
     v: 1,
     created: Date.now(),
-    settings: { theme: 'auto', sound: true, examDate: '2026-10-19', dailyGoal: 200, newCardsPerSession: 20, name: '', font: 'nunito', textSize: 'm', nav: 'auto', onboarded: false, last: null, lastBackup: null, backupEvery: 3 },
+    settings: { theme: 'auto', sound: true, examDate: '2026-10-19', dailyGoal: 200, newCardsPerSession: 20, name: '', font: 'nunito', textSize: 'm', nav: 'auto', palette: 'violet', onboarded: false, last: null, lastBackup: null, backupEvery: 3 },
     xp: 0,
     daily: {},          // { 'AAAA-MM-JJ': { xp, answered, correct, cards, goalHit } }
     streak: { count: 0, best: 0, last: null },
@@ -2585,12 +2627,14 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
       const sizes = [['s', 'A', '.85rem'], ['m', 'A', '1rem'], ['l', 'A', '1.2rem'], ['xl', 'A', '1.4rem']];
       return `<div class="typo-ctl">
         <div><div class="lbl">Police</div><div class="font-pick">${fonts.map(([k, n, d]) => `<button type="button" data-font="${k}" class="${(st.font || 'nunito') === k ? 'on' : ''}"><span class="fp-a fp-${k}">Aa</span><span><b>${n}</b><small>${d}</small></span></button>`).join('')}</div></div>
+        <div><div class="lbl">Couleurs</div><div class="pal-pick">${[['violet', '<span class="pal-sw"><i style="background:#5b4bff"></i><i style="background:#ff7a1a"></i></span>', 'Violet & orange'], ['niger', '<span class="pal-flag"></span>', 'Niger 🇳🇪']].map(([k, sw, n]) => `<button type="button" data-pal="${k}" class="${(st.palette || 'violet') === k ? 'on' : ''}">${sw}${n}</button>`).join('')}</div></div>
         <div><div class="lbl">Taille du texte</div><div class="seg size-pick">${sizes.map(([k, a, fs]) => `<button type="button" data-size="${k}" class="${(st.textSize || 'm') === k ? 'on' : ''}" style="font-size:${fs}" aria-label="Taille ${k.toUpperCase()}">${a}</button>`).join('')}</div></div>
       </div>`;
     },
     bindTypo(root) {
       const st = App.store.state.settings;
       U.$$('[data-font]', root).forEach((b) => b.addEventListener('click', () => { st.font = b.dataset.font; App.store.save(); ui.applyTypo(); U.$$('[data-font]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
+      U.$$('[data-pal]', root).forEach((b) => b.addEventListener('click', () => { st.palette = b.dataset.pal; App.store.save(); ui.applyTheme(); U.$$('[data-pal]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
       U.$$('[data-size]', root).forEach((b) => b.addEventListener('click', () => { st.textSize = b.dataset.size; App.store.save(); ui.applyTypo(); U.$$('[data-size]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
     },
 
@@ -2688,9 +2732,11 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     applyTheme() {
       const pref = App.store.state.settings.theme;
       const dark = pref === 'dark' || (pref === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      const root = document.documentElement;
+      root.dataset.theme = dark ? 'dark' : 'light';
+      root.dataset.palette = App.store.state.settings.palette || 'violet';
       const meta = document.querySelector('meta[name=theme-color]');
-      if (meta) meta.setAttribute('content', dark ? '#0b0e1d' : '#5b4bff');
+      if (meta) meta.setAttribute('content', dark ? '#0b0e1d' : root.dataset.palette === 'niger' ? '#e05206' : '#5b4bff');
     },
 
     /* Petite aide : bouton « retour » cohérent */
@@ -3266,7 +3312,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   const synth = window.speechSynthesis;
   const SUPPORTED = !!(synth && window.SpeechSynthesisUtterance);
 
-  let queue = [], idx = 0, playing = false, paused = false, keepAlive = null, bar = null, curEl = null, token = 0;
+  let queue = [], idx = 0, playing = false, paused = false, bar = null, curEl = null, token = 0;
 
   /* Texte « prononçable » : symboles du cours lus en français */
   function speakable(t) {
@@ -3321,8 +3367,11 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     return all.map((el) => ({ el, text: textOf(el) })).filter((b) => b.text.length > 1);
   }
 
+  let voicesCache = [];
+  function loadVoices() { try { voicesCache = synth.getVoices() || []; } catch (e) { voicesCache = []; } }
   function voice() {
-    const vs = synth.getVoices() || [];
+    if (!voicesCache.length) loadVoices();
+    const vs = voicesCache;
     return vs.find((v) => /^fr[-_]FR/i.test(v.lang) && v.localService) || vs.find((v) => /^fr[-_]FR/i.test(v.lang)) || vs.find((v) => /^fr/i.test(v.lang)) || null;
   }
 
@@ -3338,8 +3387,15 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     }
   }
 
+  /* Lecture robuste (Android, iPhone, ordinateur) :
+     - pas de pause()/resume() natifs (instables sur Android) : la pause arrête et la reprise relit le passage ;
+     - les énoncés restent référencés (sinon Chrome peut « oublier » l'événement de fin) ;
+     - un chien de garde passe à la suite si la fin n'est jamais signalée ;
+     - si rien ne démarre, on relance une fois puis on explique comment installer une voix. */
+  const live = [];
+  let watchdog = null, started = false, retried = false;
   function speakNext() {
-    if (!playing) return;
+    if (!playing || paused) return;
     if (idx >= queue.length) { tts.stop(); App.ui.toast('🔊', 'Lecture terminée.'); return; }
     const item = queue[idx];
     highlight(item.el);
@@ -3347,16 +3403,40 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     const my = ++token;
     let k = 0;
     const one = () => {
-      if (my !== token || !playing) return;
+      clearTimeout(watchdog);
+      if (my !== token || !playing || paused) return;
       if (k >= parts.length) { idx++; speakNext(); return; }
-      const u = new SpeechSynthesisUtterance(parts[k++]);
+      const text = parts[k++];
+      const u = new SpeechSynthesisUtterance(text);
       u.lang = 'fr-FR';
       const v = voice();
       if (v) u.voice = v;
       u.rate = rate();
-      u.onend = () => { if (my === token) one(); };
-      u.onerror = (e) => { if (my === token && e.error !== 'interrupted' && e.error !== 'canceled') { idx++; speakNext(); } };
+      let done = false;
+      const finish = () => { if (done) return; done = true; const i = live.indexOf(u); if (i >= 0) live.splice(i, 1); if (my === token) one(); };
+      u.onstart = () => { started = true; };
+      u.onend = finish;
+      u.onerror = (e) => { if (e && (e.error === 'interrupted' || e.error === 'canceled')) return; finish(); };
+      live.push(u);
       synth.speak(u);
+      // chien de garde : après la durée estimée (≈ 14 caractères/s à vitesse 1), on surveille la fin réelle
+      // (speechSynthesis.speaking) ; plafond de sécurité = 2 × l'estimation + 2,5 s
+      const dur = (text.length / (14 * rate())) * 1000;
+      const t0 = Date.now(), cap = Math.max(4000, dur * 2 + 2500);
+      const check = () => {
+        if (done || my !== token) return;
+        if (!started && Date.now() - t0 > 2500) {
+          if (!retried) { retried = true; synth.cancel(); k--; setTimeout(one, 150); return; }
+          tts.stop();
+          App.ui.toast('🔇', '<b>Aucune voix n\'a parlé.</b><div class="small muted">Sur Android : Paramètres → Gestion globale (ou Accessibilité) → Synthèse vocale → « Services vocaux Google », et télécharger la voix <b>Français</b>. Sur iPhone : désactive le mode silencieux.</div>', '', 9000);
+          return;
+        }
+        const elapsed = Date.now() - t0;
+        if (started && elapsed > dur * 0.6 && !synth.speaking && !synth.pending) { finish(); return; }
+        if (elapsed > cap) { synth.cancel(); finish(); return; }
+        watchdog = setTimeout(check, 400);
+      };
+      watchdog = setTimeout(check, Math.min(2600, Math.max(600, dur * 0.6)));
     };
     one();
     drawBar();
@@ -3386,34 +3466,35 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
       tts.stop(true);
       queue = blocks.filter((b) => b.text);
       if (!queue.length) return;
-      idx = 0; playing = true; paused = false;
-      if (!voice() && synth.getVoices().length) App.ui.toast('🔊', 'Aucune voix française installée : la lecture utilise la voix par défaut. (Réglages du téléphone → Synthèse vocale.)', '', 5000);
-      clearInterval(keepAlive);
-      keepAlive = setInterval(() => { if (playing && !paused && synth.speaking) { synth.pause(); synth.resume(); } }, 12000);
+      idx = 0; playing = true; paused = false; started = false; retried = false;
+      loadVoices();
+      if (!voice() && voicesCache.length) App.ui.toast('🔊', 'Aucune voix française installée : la lecture utilise la voix par défaut. (Paramètres du téléphone → Synthèse vocale → Français.)', '', 5000);
       speakNext();
     },
     readEl(root) { tts.play(blocksOf(root)); },
     readTexts(list) { tts.play(list.map((t) => ({ el: null, text: speakable(String(t).replace(/<[^>]+>/g, ' ')) }))); },
     toggle() {
       if (!playing) return;
-      if (paused) { paused = false; synth.resume(); if (!synth.speaking) speakNext(); }
-      else { paused = true; synth.pause(); }
+      if (paused) { paused = false; speakNext(); }        // relit le passage en cours
+      else { paused = true; token++; clearTimeout(watchdog); synth.cancel(); }
       drawBar();
     },
-    next() { if (!playing) return; token++; synth.cancel(); idx = Math.min(queue.length, idx + 1); paused = false; speakNext(); },
-    prev() { if (!playing) return; token++; synth.cancel(); idx = Math.max(0, idx - 1); paused = false; speakNext(); },
+    jump(d) { if (!playing) return; token++; clearTimeout(watchdog); synth.cancel(); idx = Math.max(0, Math.min(queue.length, idx + d)); paused = false; speakNext(); },
+    next() { tts.jump(1); },
+    prev() { tts.jump(-1); },
     rate() {
       const steps = [0.85, 1, 1.15, 1.3, 1.5];
       const cur = rate();
       const nx = steps[(steps.indexOf(cur) + 1) % steps.length] || 1;
       App.store.state.settings.ttsRate = nx;
       App.store.save();
-      if (playing) { token++; synth.cancel(); paused = false; speakNext(); } else drawBar();
+      if (playing && !paused) tts.jump(0); else drawBar();
     },
-    stop(silent) {
+    stop() {
       token++;
       playing = false; paused = false;
-      clearInterval(keepAlive);
+      clearTimeout(watchdog);
+      live.length = 0;
       if (SUPPORTED) synth.cancel();
       highlight(null);
       if (bar) { bar.remove(); bar = null; }
@@ -3423,7 +3504,9 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   });
 
   if (SUPPORTED) {
-    try { synth.getVoices(); if (synth.addEventListener) synth.addEventListener('voiceschanged', () => {}); } catch (e) { /* ignore */ }
+    loadVoices();
+    try { if (synth.addEventListener) synth.addEventListener('voiceschanged', loadVoices); else synth.onvoiceschanged = loadVoices; } catch (e) { /* ignore */ }
+    document.addEventListener('visibilitychange', () => { if (document.hidden && playing && !paused) tts.toggle(); });
     window.addEventListener('beforeunload', () => synth.cancel());
   }
   App.bus.on('route', () => tts.stop(true));
@@ -3504,7 +3587,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     ins.deferred = e;
     App.bus.emit('installable');
     const cur = App.router.current && App.router.current.path;
-    if (cur === '/' || cur === '/profil' || cur === '/apropos') App.router.resolve();
+    if ((cur === '/' || cur === '/profil' || cur === '/apropos') && !document.querySelector('.modal-bg')) App.router.resolve();
   });
   window.addEventListener('appinstalled', () => { ins.deferred = null; App.game && App.game.award && App.game.award('installed'); });
 
@@ -10599,7 +10682,9 @@ done < /root/nouveaux.txt`) + '<p>Barème : boucle de lecture (0,5), test d\'exi
     if (st.xp > 0) { st.settings.onboarded = true; App.store.save(); return; }
     const S = st.settings;
     let step = 0;
-    const m = App.ui.modal('<div class="onb" id="onb"></div>', { wide: true, locked: true, onClose: () => { S.onboarded = true; App.store.save(); } });
+    if (document.querySelector('.onb')) return; // déjà affiché
+    // keepOnRoute : un rafraîchissement de la page (ex. proposition d'installation) ne doit pas fermer l'accueil
+    const m = App.ui.modal('<div class="onb" id="onb"></div>', { wide: true, locked: true, keepOnRoute: true, onClose: () => { S.onboarded = true; App.store.save(); } });
     const box = m.el.querySelector('#onb');
     const dots = (n) => `<div class="onb-dots">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
     const finish = () => {

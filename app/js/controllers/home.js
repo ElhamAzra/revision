@@ -151,7 +151,9 @@
     if (st.xp > 0) { st.settings.onboarded = true; App.store.save(); return; }
     const S = st.settings;
     let step = 0;
-    const m = App.ui.modal('<div class="onb" id="onb"></div>', { wide: true, locked: true, onClose: () => { S.onboarded = true; App.store.save(); } });
+    if (document.querySelector('.onb')) return; // déjà affiché
+    // keepOnRoute : un rafraîchissement de la page (ex. proposition d'installation) ne doit pas fermer l'accueil
+    const m = App.ui.modal('<div class="onb" id="onb"></div>', { wide: true, locked: true, keepOnRoute: true, onClose: () => { S.onboarded = true; App.store.save(); } });
     const box = m.el.querySelector('#onb');
     const dots = (n) => `<div class="onb-dots">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
     const finish = () => {
