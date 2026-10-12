@@ -42,7 +42,7 @@
       }).join('')}</div>` : ''}
       ${gens.length ? `<h3 class="mt3">♾️ Générateurs d'exercices infinis</h3><div class="grid auto">${gens.map(genCard).join('')}</div>` : ''}`;
     } else {
-      body = m.phrases.length ? `<div class="card"><p class="muted small">Récite-les de mémoire avant de commencer la séance suivante, puis vérifie. C'est le rappel actif le plus rentable.</p>
+      body = m.phrases.length ? `<div class="card"><div class="row between"><p class="muted small mb0">Récite-les de mémoire avant de commencer la séance suivante, puis vérifie. C'est le rappel actif le plus rentable.</p>${App.tts.btn('Écouter les 5 phrases')}</div>
         <div data-recite>${m.phrases.map((ph, i) => `<div class="co ex reveal"><div class="co-h">Phrase ${i + 1}</div><div class="small muted">${hintOf(ph)}</div><div class="mt1"><button class="btn sm soft reveal-btn">Voir la réponse</button></div><div class="reveal-body mt1"><b>${ph}</b></div></div>`).join('')}</div></div>` : '<p class="muted">Pas de phrases pour ce module.</p>';
     }
 
@@ -71,6 +71,8 @@
       <div class="tabs mt2">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>
       ${body}`, { help: 'cours' });
     U.$$('.tabs button').forEach((b) => b.addEventListener('click', () => R.go(`/cours/${m.id}?tab=${b.dataset.tab}`)));
+    const tp = document.querySelector('#view [data-tts]');
+    if (tp) tp.addEventListener('click', () => App.tts.readTexts(m.phrases.map((ph, k) => `Phrase ${k + 1}. ${ph}`)));
   }, { keepScroll: false });
 
   function hintOf(ph) {
@@ -112,7 +114,7 @@
         ${App.guided.active(m.id) ? `<a class="guided-pill" href="#/seance">🧭 Séance guidée en cours · étape Leçons (${doneN}/${m.lessons.length}) <b>↩ revenir au parcours</b></a>` : ''}
         <div class="row between" style="align-items:flex-start">
           <div class="grow"><div class="lesson-kicker" style="color:${m.color}">${m.icon} ${m.label} · leçon ${i + 1}/${m.lessons.length} · ${l.min || 5} min</div><h1 class="mt1">${l.title}</h1></div>
-          ${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}
+          <div class="row" style="gap:.4rem">${App.tts.btn('Écouter')}${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}</div>
         </div>
         ${App.ui.bar((i + 1) / m.lessons.length)}
         ${l.essentiel ? `<div class="essentiel mt2"><div class="tag">⚡ L'essentiel en 30 secondes</div>${l.essentiel}</div>` : '<div class="mt2"></div>'}
@@ -127,6 +129,8 @@
       </div>
       ${outline}
       </div>`, { wide: true, help: 'lecon' });
+    const tb = v.querySelector('[data-tts]');
+    if (tb) tb.addEventListener('click', () => App.tts.readEl(v.querySelector('.lesson-main')));
     const rp = v.querySelector('.read-progress > i');
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;

@@ -596,6 +596,23 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .checklist input { width: 1.15rem; height: 1.15rem; accent-color: var(--ok); }
 .checklist label:has(input:checked) { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 40%, transparent); text-decoration: line-through; color: var(--muted); }
 
+/* Lecture audio */
+.tts-on { background: color-mix(in srgb, var(--accent) 16%, transparent) !important; border-radius: 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); transition: background .2s; }
+.tts-bar {
+  position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: .35rem; padding: .45rem .55rem .45rem .8rem; border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); animation: slideUp .25s ease; max-width: calc(100vw - 1.5rem);
+}
+:root[data-nav="mobile"] .tts-bar { bottom: auto; top: calc(60px + env(safe-area-inset-top)); }
+.tts-ico { font-size: 1.2rem; }
+.tts-info { display: flex; flex-direction: column; line-height: 1.15; margin-right: .3rem; min-width: 4.2rem; }
+.tts-info b { font-family: var(--font-display); font-weight: 600; font-size: .85rem; }
+.tts-info small { color: var(--muted); font-size: .72rem; font-weight: 700; }
+.tts-b { width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 1rem; display: grid; place-items: center; }
+.tts-b:hover { border-color: var(--primary); color: var(--primary); }
+.tts-rate { width: auto; padding: 0 .5rem; font-family: var(--font-display); font-weight: 700; font-size: .8rem; }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);

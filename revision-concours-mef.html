@@ -614,6 +614,23 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .checklist input { width: 1.15rem; height: 1.15rem; accent-color: var(--ok); }
 .checklist label:has(input:checked) { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 40%, transparent); text-decoration: line-through; color: var(--muted); }
 
+/* Lecture audio */
+.tts-on { background: color-mix(in srgb, var(--accent) 16%, transparent) !important; border-radius: 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); transition: background .2s; }
+.tts-bar {
+  position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: .35rem; padding: .45rem .55rem .45rem .8rem; border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); animation: slideUp .25s ease; max-width: calc(100vw - 1.5rem);
+}
+:root[data-nav="mobile"] .tts-bar { bottom: auto; top: calc(60px + env(safe-area-inset-top)); }
+.tts-ico { font-size: 1.2rem; }
+.tts-info { display: flex; flex-direction: column; line-height: 1.15; margin-right: .3rem; min-width: 4.2rem; }
+.tts-info b { font-family: var(--font-display); font-weight: 600; font-size: .85rem; }
+.tts-info small { color: var(--muted); font-size: .72rem; font-weight: 700; }
+.tts-b { width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 1rem; display: grid; place-items: center; }
+.tts-b:hover { border-color: var(--primary); color: var(--primary); }
+.tts-rate { width: auto; padding: 0 .5rem; font-family: var(--font-display); font-weight: 700; font-size: .8rem; }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);
@@ -3155,6 +3172,182 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
       go(0);
     }
   });
+})();
+
+</script>
+  <script>
+/* js/views/tts.js */
+/* Vue : lecture à voix haute (synthèse vocale du navigateur, hors ligne sur la plupart des appareils).
+   Lit une page bloc par bloc (titres, paragraphes, listes, encadrés), surligne le passage en cours,
+   avec un lecteur flottant : pause / reprise, passage suivant, vitesse, arrêt. */
+(function () {
+  'use strict';
+  const App = window.App;
+  const U = App.util;
+  const synth = window.speechSynthesis;
+  const SUPPORTED = !!(synth && window.SpeechSynthesisUtterance);
+
+  let queue = [], idx = 0, playing = false, paused = false, keepAlive = null, bar = null, curEl = null, token = 0;
+
+  /* Texte « prononçable » : symboles du cours lus en français */
+  function speakable(t) {
+    return String(t)
+      .replace(/\s+/g, ' ')
+      .replace(/(\d)\s*\/\s*(\d)/g, '$1 sur $2')
+      .replace(/\/(\d{1,3})\b/g, ' barre oblique $1')
+      .replace(/→|⇒|->/g, ', donne, ')
+      .replace(/←/g, ', vient de, ')
+      .replace(/↔/g, ' et réciproquement ')
+      .replace(/≤/g, ' inférieur ou égal à ').replace(/≥/g, ' supérieur ou égal à ')
+      .replace(/≠/g, ' différent de ').replace(/≈/g, ' environ ')
+      .replace(/×/g, ' fois ').replace(/÷/g, ' divisé par ').replace(/−/g, ' moins ')
+      .replace(/\s=\s/g, ' égale ').replace(/·/g, ', ')
+      .replace(/\be\.g\./gi, 'par exemple').replace(/\bcf\./gi, 'voir')
+      .replace(/\s\+\s/g, ' plus ')
+      .replace(/[«»"]/g, '')
+      .replace(/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]/g, '')
+      .trim();
+  }
+
+  function textOf(el) {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('button, .tts-skip, .help-btn, script, style').forEach((x) => x.remove());
+    c.querySelectorAll('sup').forEach((s) => { const v = s.textContent.trim(); s.textContent = /^\d+$/.test(v) ? ' puissance ' + v + ' ' : v; });
+    c.querySelectorAll('sub').forEach((s) => { s.textContent = ' indice ' + s.textContent + ' '; });
+    c.querySelectorAll('.bits').forEach((s) => { s.textContent = ' ' + s.textContent.replace(/\s+/g, '').replace(/\./g, ' point ') + ' '; });
+    c.querySelectorAll('.frac').forEach((s) => { const sp = s.querySelectorAll('span'); if (sp.length === 2) s.textContent = ` ${sp[0].textContent} sur ${sp[1].textContent} `; });
+    return speakable(c.textContent);
+  }
+
+  /* Découpe en phrases de taille raisonnable (contourne la coupure des longues lectures sur Chrome) */
+  function chunks(text) {
+    const out = [];
+    (text.match(/[^.!?;:]+[.!?;:]*\s*/g) || [text]).map((x) => x.trim()).forEach((s) => {
+      if (!s) return;
+      if (out.length && (out[out.length - 1] + ' ' + s).length < 200) out[out.length - 1] += ' ' + s;
+      else out.push(s);
+    });
+    return out;
+  }
+
+  /* Blocs lisibles d'une zone de page, dans l'ordre */
+  function blocksOf(root) {
+    const sel = 'h1, h2, h3, h4, p, li, .f, tr, .essentiel .tag, .co-h, .lead';
+    const all = U.$$(sel, root).filter((el) => {
+      if (el.closest('.q-card, .widget, pre, .tts-bar, .lesson-dock, .crumbs, .reveal-body:not(.tts-force), details:not([open]) > :not(summary), .lesson-aside, .help-btn, .coach')) return false;
+      if (el.parentElement && el.parentElement.closest(sel)) return false; // pas de double lecture
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+    return all.map((el) => ({ el, text: textOf(el) })).filter((b) => b.text.length > 1);
+  }
+
+  function voice() {
+    const vs = synth.getVoices() || [];
+    return vs.find((v) => /^fr[-_]FR/i.test(v.lang) && v.localService) || vs.find((v) => /^fr[-_]FR/i.test(v.lang)) || vs.find((v) => /^fr/i.test(v.lang)) || null;
+  }
+
+  function rate() { return App.store.state.settings.ttsRate || 1; }
+
+  function highlight(el) {
+    if (curEl) curEl.classList.remove('tts-on');
+    curEl = el || null;
+    if (curEl) {
+      curEl.classList.add('tts-on');
+      const r = curEl.getBoundingClientRect();
+      if (r.top < 80 || r.bottom > window.innerHeight - 140) curEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function speakNext() {
+    if (!playing) return;
+    if (idx >= queue.length) { tts.stop(); App.ui.toast('🔊', 'Lecture terminée.'); return; }
+    const item = queue[idx];
+    highlight(item.el);
+    const parts = chunks(item.text);
+    const my = ++token;
+    let k = 0;
+    const one = () => {
+      if (my !== token || !playing) return;
+      if (k >= parts.length) { idx++; speakNext(); return; }
+      const u = new SpeechSynthesisUtterance(parts[k++]);
+      u.lang = 'fr-FR';
+      const v = voice();
+      if (v) u.voice = v;
+      u.rate = rate();
+      u.onend = () => { if (my === token) one(); };
+      u.onerror = (e) => { if (my === token && e.error !== 'interrupted' && e.error !== 'canceled') { idx++; speakNext(); } };
+      synth.speak(u);
+    };
+    one();
+    drawBar();
+  }
+
+  function drawBar() {
+    if (!bar) {
+      bar = U.el(`<div class="tts-bar" role="region" aria-label="Lecture audio"></div>`);
+      document.body.appendChild(bar);
+    }
+    const r = rate();
+    bar.innerHTML = `<span class="tts-ico">🔊</span>
+      <div class="tts-info"><b>${paused ? 'En pause' : 'Lecture'}</b><small>${Math.min(idx + 1, queue.length)} / ${queue.length}</small></div>
+      <button class="tts-b" data-t="toggle" title="${paused ? 'Reprendre' : 'Pause'}">${paused ? '▶' : '⏸'}</button>
+      <button class="tts-b" data-t="prev" title="Passage précédent">⏮</button>
+      <button class="tts-b" data-t="next" title="Passage suivant">⏭</button>
+      <button class="tts-b tts-rate" data-t="rate" title="Vitesse">${String(r).replace('.', ',')}×</button>
+      <button class="tts-b" data-t="stop" title="Arrêter">⏹</button>`;
+    bar.querySelectorAll('[data-t]').forEach((b) => b.addEventListener('click', () => tts[b.dataset.t]()));
+  }
+
+  const tts = (App.tts = {
+    supported: SUPPORTED,
+    /* Lit une liste de blocs [{el?, text}] */
+    play(blocks) {
+      if (!SUPPORTED) { App.ui.toast('🔇', 'La lecture à voix haute n\'est pas disponible sur ce navigateur.'); return; }
+      tts.stop(true);
+      queue = blocks.filter((b) => b.text);
+      if (!queue.length) return;
+      idx = 0; playing = true; paused = false;
+      if (!voice() && synth.getVoices().length) App.ui.toast('🔊', 'Aucune voix française installée : la lecture utilise la voix par défaut. (Réglages du téléphone → Synthèse vocale.)', '', 5000);
+      clearInterval(keepAlive);
+      keepAlive = setInterval(() => { if (playing && !paused && synth.speaking) { synth.pause(); synth.resume(); } }, 12000);
+      speakNext();
+    },
+    readEl(root) { tts.play(blocksOf(root)); },
+    readTexts(list) { tts.play(list.map((t) => ({ el: null, text: speakable(String(t).replace(/<[^>]+>/g, ' ')) }))); },
+    toggle() {
+      if (!playing) return;
+      if (paused) { paused = false; synth.resume(); if (!synth.speaking) speakNext(); }
+      else { paused = true; synth.pause(); }
+      drawBar();
+    },
+    next() { if (!playing) return; token++; synth.cancel(); idx = Math.min(queue.length, idx + 1); paused = false; speakNext(); },
+    prev() { if (!playing) return; token++; synth.cancel(); idx = Math.max(0, idx - 1); paused = false; speakNext(); },
+    rate() {
+      const steps = [0.85, 1, 1.15, 1.3, 1.5];
+      const cur = rate();
+      const nx = steps[(steps.indexOf(cur) + 1) % steps.length] || 1;
+      App.store.state.settings.ttsRate = nx;
+      App.store.save();
+      if (playing) { token++; synth.cancel(); paused = false; speakNext(); } else drawBar();
+    },
+    stop(silent) {
+      token++;
+      playing = false; paused = false;
+      clearInterval(keepAlive);
+      if (SUPPORTED) synth.cancel();
+      highlight(null);
+      if (bar) { bar.remove(); bar = null; }
+    },
+    /* Bouton « Écouter » réutilisable */
+    btn(label, cls) { return SUPPORTED ? `<button type="button" class="btn ${cls || 'sm soft'} tts-btn" data-tts>🔊 ${label || 'Écouter'}</button>` : ''; }
+  });
+
+  if (SUPPORTED) {
+    try { synth.getVoices(); if (synth.addEventListener) synth.addEventListener('voiceschanged', () => {}); } catch (e) { /* ignore */ }
+    window.addEventListener('beforeunload', () => synth.cancel());
+  }
+  App.bus.on('route', () => tts.stop(true));
 })();
 
 </script>
@@ -10260,7 +10453,7 @@ fi`) },
       }).join('')}</div>` : ''}
       ${gens.length ? `<h3 class="mt3">♾️ Générateurs d'exercices infinis</h3><div class="grid auto">${gens.map(genCard).join('')}</div>` : ''}`;
     } else {
-      body = m.phrases.length ? `<div class="card"><p class="muted small">Récite-les de mémoire avant de commencer la séance suivante, puis vérifie. C'est le rappel actif le plus rentable.</p>
+      body = m.phrases.length ? `<div class="card"><div class="row between"><p class="muted small mb0">Récite-les de mémoire avant de commencer la séance suivante, puis vérifie. C'est le rappel actif le plus rentable.</p>${App.tts.btn('Écouter les 5 phrases')}</div>
         <div data-recite>${m.phrases.map((ph, i) => `<div class="co ex reveal"><div class="co-h">Phrase ${i + 1}</div><div class="small muted">${hintOf(ph)}</div><div class="mt1"><button class="btn sm soft reveal-btn">Voir la réponse</button></div><div class="reveal-body mt1"><b>${ph}</b></div></div>`).join('')}</div></div>` : '<p class="muted">Pas de phrases pour ce module.</p>';
     }
 
@@ -10289,6 +10482,8 @@ fi`) },
       <div class="tabs mt2">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>
       ${body}`, { help: 'cours' });
     U.$$('.tabs button').forEach((b) => b.addEventListener('click', () => R.go(`/cours/${m.id}?tab=${b.dataset.tab}`)));
+    const tp = document.querySelector('#view [data-tts]');
+    if (tp) tp.addEventListener('click', () => App.tts.readTexts(m.phrases.map((ph, k) => `Phrase ${k + 1}. ${ph}`)));
   }, { keepScroll: false });
 
   function hintOf(ph) {
@@ -10330,7 +10525,7 @@ fi`) },
         ${App.guided.active(m.id) ? `<a class="guided-pill" href="#/seance">🧭 Séance guidée en cours · étape Leçons (${doneN}/${m.lessons.length}) <b>↩ revenir au parcours</b></a>` : ''}
         <div class="row between" style="align-items:flex-start">
           <div class="grow"><div class="lesson-kicker" style="color:${m.color}">${m.icon} ${m.label} · leçon ${i + 1}/${m.lessons.length} · ${l.min || 5} min</div><h1 class="mt1">${l.title}</h1></div>
-          ${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}
+          <div class="row" style="gap:.4rem">${App.tts.btn('Écouter')}${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}</div>
         </div>
         ${App.ui.bar((i + 1) / m.lessons.length)}
         ${l.essentiel ? `<div class="essentiel mt2"><div class="tag">⚡ L'essentiel en 30 secondes</div>${l.essentiel}</div>` : '<div class="mt2"></div>'}
@@ -10345,6 +10540,8 @@ fi`) },
       </div>
       ${outline}
       </div>`, { wide: true, help: 'lecon' });
+    const tb = v.querySelector('[data-tts]');
+    if (tb) tb.addEventListener('click', () => App.tts.readEl(v.querySelector('.lesson-main')));
     const rp = v.querySelector('.read-progress > i');
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -10469,7 +10666,8 @@ fi`) },
             <div class="face back"><span class="tag">Réponse</span><div class="fc-text prose">${c.back}</div></div>
           </div>
         </div>
-        <div id="rateBox" class="mt2"><button class="btn primary lg block" id="flipBtn">Retourner la carte <span class="k">Espace</span></button></div>`;
+        <div id="rateBox" class="mt2"><button class="btn primary lg block" id="flipBtn">Retourner la carte <span class="k">Espace</span></button></div>
+        ${App.tts.supported ? '<div class="center mt1"><button class="btn sm ghost" id="cardTts">🔊 Lire la carte</button></div>' : ''}`;
       const flip = host.querySelector('#flip');
       // hauteur adaptée au contenu le plus long
       requestAnimationFrame(() => {
@@ -10478,6 +10676,8 @@ fi`) },
         flip.style.minHeight = Math.min(h, 620) + 'px';
       });
       flip.addEventListener('click', doFlip);
+      const ct = host.querySelector('#cardTts');
+      if (ct) ct.addEventListener('click', () => App.tts.readTexts(flipped ? [c.front, 'Réponse : ' + c.back] : [c.front]));
       host.querySelector('#flipBtn').addEventListener('click', doFlip);
     }
 
@@ -11595,7 +11795,9 @@ fi`) },
       ${vl ? '<a class="guided-pill" href="#/veille">🌙 Veille du concours · étape 1 : relis la fiche en entier <b>↩ revenir au parcours</b></a>' : ''}
       ${f ? f.map((s) => `<div class="card mt2"><h2>${s.title}</h2><div class="prose">${s.html}</div></div>`).join('') : '<p class="muted">Fiche indisponible.</p>'}
       ${App.content.extras.reflexes ? `<div class="card mt2"><h2>🧭 Le jour J : 8 réflexes</h2><ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></div>` : ''}
-      <div class="row mt2">${vl ? '<button class="btn primary" id="ficheOk">✓ Fiche relue → suite de la veille</button>' : ''}<button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
+      <div class="row mt2">${vl ? '<button class="btn primary" id="ficheOk">✓ Fiche relue → suite de la veille</button>' : ''}${App.tts.btn('Écouter la fiche', '')}<button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
+    const ft = v.querySelector('[data-tts]');
+    if (ft) ft.addEventListener('click', () => App.tts.readEl(v));
     const ok = v.querySelector('#ficheOk');
     if (ok) ok.addEventListener('click', () => { App.veille.mark('fiche'); R.go('/veille'); });
   });

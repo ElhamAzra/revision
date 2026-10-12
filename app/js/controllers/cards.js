@@ -71,7 +71,8 @@
             <div class="face back"><span class="tag">Réponse</span><div class="fc-text prose">${c.back}</div></div>
           </div>
         </div>
-        <div id="rateBox" class="mt2"><button class="btn primary lg block" id="flipBtn">Retourner la carte <span class="k">Espace</span></button></div>`;
+        <div id="rateBox" class="mt2"><button class="btn primary lg block" id="flipBtn">Retourner la carte <span class="k">Espace</span></button></div>
+        ${App.tts.supported ? '<div class="center mt1"><button class="btn sm ghost" id="cardTts">🔊 Lire la carte</button></div>' : ''}`;
       const flip = host.querySelector('#flip');
       // hauteur adaptée au contenu le plus long
       requestAnimationFrame(() => {
@@ -80,6 +81,8 @@
         flip.style.minHeight = Math.min(h, 620) + 'px';
       });
       flip.addEventListener('click', doFlip);
+      const ct = host.querySelector('#cardTts');
+      if (ct) ct.addEventListener('click', () => App.tts.readTexts(flipped ? [c.front, 'Réponse : ' + c.back] : [c.front]));
       host.querySelector('#flipBtn').addEventListener('click', doFlip);
     }
 

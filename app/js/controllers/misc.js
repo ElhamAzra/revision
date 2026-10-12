@@ -49,7 +49,9 @@
       ${vl ? '<a class="guided-pill" href="#/veille">🌙 Veille du concours · étape 1 : relis la fiche en entier <b>↩ revenir au parcours</b></a>' : ''}
       ${f ? f.map((s) => `<div class="card mt2"><h2>${s.title}</h2><div class="prose">${s.html}</div></div>`).join('') : '<p class="muted">Fiche indisponible.</p>'}
       ${App.content.extras.reflexes ? `<div class="card mt2"><h2>🧭 Le jour J : 8 réflexes</h2><ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></div>` : ''}
-      <div class="row mt2">${vl ? '<button class="btn primary" id="ficheOk">✓ Fiche relue → suite de la veille</button>' : ''}<button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
+      <div class="row mt2">${vl ? '<button class="btn primary" id="ficheOk">✓ Fiche relue → suite de la veille</button>' : ''}${App.tts.btn('Écouter la fiche', '')}<button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
+    const ft = v.querySelector('[data-tts]');
+    if (ft) ft.addEventListener('click', () => App.tts.readEl(v));
     const ok = v.querySelector('#ficheOk');
     if (ok) ok.addEventListener('click', () => { App.veille.mark('fiche'); R.go('/veille'); });
   });
