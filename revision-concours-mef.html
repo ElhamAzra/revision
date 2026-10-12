@@ -429,6 +429,57 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
   .font-pick button { padding: .5rem .7rem; }
 }
 
+/* Assistant de premier lancement */
+.onb-choice { display: grid; gap: .7rem; }
+.onb div.lbl { display: block; font-family: var(--font-display); font-size: .8rem; font-weight: 600; color: var(--text-2); margin-bottom: .4rem; }
+.onb-opt {
+  display: flex; align-items: center; gap: .9rem; text-align: left; width: 100%; cursor: pointer;
+  padding: 1rem 1.1rem; border-radius: 16px; border: 2px solid var(--border); background: var(--surface); color: var(--text);
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.onb-opt:hover { border-color: var(--primary); background: var(--primary-soft); }
+.onb-opt:active { transform: scale(.99); }
+.onb-opt .e { font-size: 1.9rem; flex: none; width: 2.6rem; text-align: center; }
+.onb-opt b { display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.onb-opt small { display: block; color: var(--muted); font-size: .84rem; line-height: 1.4; margin-top: .1rem; }
+.onb-dots { display: flex; justify-content: center; gap: .4rem; margin-bottom: 1rem; }
+.onb-dots i { width: 34px; height: 6px; border-radius: 99px; background: var(--surface-3); }
+.onb-dots i.on { background: linear-gradient(90deg, var(--primary), var(--primary-2)); }
+.onb-name { font-size: 1.15rem; padding: .8rem 1rem; }
+.onb-goals { display: grid; gap: .5rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.onb-goals button {
+  display: flex; flex-direction: column; align-items: center; gap: .05rem; padding: .7rem .4rem; border-radius: 14px; cursor: pointer;
+  border: 2px solid var(--border); background: var(--surface); color: var(--text); text-align: center;
+}
+.onb-goals button.on { border-color: var(--primary); background: var(--primary-soft); }
+.onb-goals .e { font-size: 1.4rem; }
+.onb-goals b { font-family: var(--font-display); font-weight: 600; }
+.onb-goals small { font-size: .74rem; color: var(--muted); font-weight: 600; }
+.onb-nav { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-top: 1.4rem; flex-wrap: wrap; }
+.onb-nav .btn.primary { margin-left: auto; }
+.onb-save { display: grid; gap: .55rem; }
+.onb-save > div { display: flex; gap: .75rem; align-items: flex-start; background: var(--surface-2); border: 1px solid var(--border); border-radius: 13px; padding: .65rem .8rem; }
+.onb-save span { font-size: 1.3rem; line-height: 1.3; }
+.onb-save p { margin: 0; font-size: .92rem; }
+/* Sauvegarde */
+.bk-sum { display: grid; gap: .5rem; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 1rem; }
+.bk-sum > div { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: .55rem .4rem; text-align: center; }
+.bk-sum b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.bk-sum small { color: var(--muted); font-size: .74rem; font-weight: 600; }
+.bk-remind {
+  display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; padding: .85rem 1rem; border-radius: var(--radius);
+  background: var(--info-soft); border: 1px solid color-mix(in srgb, var(--info) 35%, transparent);
+}
+.bk-remind .bk-ico { font-size: 1.6rem; }
+.bk-remind .grow { min-width: 14rem; }
+.bk-status { display: flex; gap: .6rem; align-items: center; background: var(--surface-2); border-radius: 12px; padding: .55rem .8rem; }
+:root.drop-on body::after {
+  content: "📂  Dépose ta sauvegarde ici pour la restaurer"; position: fixed; inset: 12px; z-index: 200; display: grid; place-items: center;
+  border: 3px dashed var(--primary); border-radius: 24px; background: color-mix(in srgb, var(--surface) 88%, transparent);
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--primary); pointer-events: none;
+}
+@media (max-width: 600px) { .onb-goals small:first-of-type { display: none; } .bk-sum b { font-size: 1rem; } }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);
@@ -1624,7 +1675,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   const defaults = () => ({
     v: 1,
     created: Date.now(),
-    settings: { theme: 'auto', sound: true, examDate: '2026-10-19', dailyGoal: 200, newCardsPerSession: 20, name: '', font: 'nunito', textSize: 'm', nav: 'auto', onboarded: false, last: null },
+    settings: { theme: 'auto', sound: true, examDate: '2026-10-19', dailyGoal: 200, newCardsPerSession: 20, name: '', font: 'nunito', textSize: 'm', nav: 'auto', onboarded: false, last: null, lastBackup: null, backupEvery: 3 },
     xp: 0,
     daily: {},          // { 'AAAA-MM-JJ': { xp, answered, correct, cards, goalHit } }
     streak: { count: 0, best: 0, last: null },
@@ -2034,7 +2085,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
       App.fx.confetti(1.2);
       App.ui.modal(`
         <div class="big-emoji">🎉</div>
-        <h2 class="center mt1">Niveau ${info.level} !</h2>
+        <h2 class="center mt1">${App.backup && App.backup.name() ? 'Bravo ' + App.backup.name() + ', niveau ' : 'Niveau '}${info.level} !</h2>
         <p class="center">Tu es maintenant <b class="pri-t">${info.title}</b>.</p>
         <p class="center muted small">Prochain palier : ${U.fmtNum(info.next)} XP. Continue, chaque question te rapproche du concours.</p>
         <div class="center mt2"><button class="btn primary" data-close>Continuer 🚀</button></div>`);
@@ -2456,6 +2507,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
             <div class="side-foot">
               <div class="side-player" id="sidePlayer"></div>
               <div class="side-tools">
+                <button class="tool" data-tool="save" title="Sauvegarder ma progression (fichier)" aria-label="Sauvegarder ma progression">💾</button>
                 <button class="tool" data-tool="theme" title="Thème clair / sombre" aria-label="Changer de thème"></button>
                 <button class="tool" data-tool="fs" title="Plein écran (F)" aria-label="Plein écran"></button>
                 <button class="tool" data-tool="nav" title="Replier / déplier le menu" aria-label="Replier le menu"></button>
@@ -2503,6 +2555,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
 
     tool(name) {
       if (name === 'fs') App.ui.fullscreen.toggle();
+      else if (name === 'save') App.backup.download();
       else if (name === 'theme') {
         const st = App.store.state.settings;
         st.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -2580,6 +2633,203 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
 
   App.bus.on('route', () => { back = null; layout.refresh(); });
   App.bus.on('xp', U.debounce(() => layout.refresh(), 120));
+})();
+
+</script>
+  <script>
+/* js/views/backup.js */
+/* Vue : sauvegarde et restauration de la progression (fichier .json), aperçu avant restauration,
+   rappels de sauvegarde et glisser-déposer d'un fichier de sauvegarde sur la fenêtre. */
+(function () {
+  'use strict';
+  const App = window.App;
+  const U = App.util;
+  const DAY = 86400000;
+
+  const backup = (App.backup = {
+    /* Prénom de l'utilisateur, échappé pour l'affichage ('' si inconnu) */
+    name() { return U.esc((App.store.state.settings.name || '').trim()); },
+
+    fileName() {
+      const n = U.norm(App.store.state.settings.name || '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      return 'sauvegarde-revision-mef' + (n ? '-' + n : '') + '-' + U.dayKey() + '.json';
+    },
+
+    /* Télécharge la sauvegarde et mémorise la date */
+    download() {
+      const st = App.store.state;
+      st.settings.lastBackup = Date.now();
+      delete st.settings.backupSnooze;
+      App.store.saveNow();
+      const blob = new Blob([App.store.exportJSON()], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = backup.fileName();
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+      App.ui.toast('💾', `<b>Sauvegarde téléchargée</b><div class="small muted">${U.esc(backup.fileName())} — garde-la précieusement (Téléchargements, clé, WhatsApp…).</div>`, '', 5000);
+      App.bus.emit('backup');
+    },
+
+    /* Ouvre le sélecteur de fichier puis lance la restauration */
+    pick(after) {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = '.json,application/json';
+      inp.style.display = 'none';
+      inp.addEventListener('change', () => {
+        const f = inp.files[0];
+        inp.remove();
+        if (f) backup.readFile(f, after);
+      });
+      document.body.appendChild(inp);
+      inp.click();
+    },
+
+    readFile(file, after) {
+      const rd = new FileReader();
+      rd.onload = () => backup.restoreFlow(String(rd.result), after);
+      rd.onerror = () => App.ui.toast('⚠️', 'Impossible de lire ce fichier.');
+      rd.readAsText(file);
+    },
+
+    /* Résumé lisible d'un fichier de sauvegarde (lève une erreur si invalide) */
+    preview(text) {
+      const data = JSON.parse(text);
+      const st = data && data.state ? data.state : data;
+      if (!st || typeof st !== 'object' || !('xp' in st)) throw new Error('ce n\'est pas une sauvegarde de cette application');
+      const L = App.game.level(st.xp || 0);
+      const days = Object.keys(st.daily || {}).sort();
+      return {
+        name: (st.settings && st.settings.name) || '',
+        xp: st.xp || 0,
+        level: L.level,
+        title: L.title,
+        lessons: Object.keys(st.lessons || {}).length,
+        cards: Object.keys(st.cards || {}).length,
+        errors: Object.keys(st.errors || {}).length,
+        badges: Object.keys(st.badges || {}).length,
+        exams: (st.exams || []).length,
+        streak: (st.streak && st.streak.best) || 0,
+        exportedAt: data.exportedAt ? new Date(data.exportedAt).getTime() : null,
+        lastDay: days.length ? days[days.length - 1] : null
+      };
+    },
+
+    /* Aperçu + confirmation, puis restauration */
+    restoreFlow(text, after) {
+      let p;
+      try { p = backup.preview(text); }
+      catch (e) { App.ui.toast('⚠️', '<b>Fichier invalide</b><div class="small muted">' + U.esc(e.message) + '.</div>', '', 4500); return; }
+      const cur = App.store.state;
+      const hasCurrent = cur.xp > 0;
+      const m = App.ui.modal(`
+        <div class="big-emoji">📂</div>
+        <h2 class="center mt1">${p.name ? 'Sauvegarde de ' + U.esc(p.name) : 'Sauvegarde trouvée'}</h2>
+        <p class="center muted small">${p.exportedAt ? 'Créée ' + U.ago(p.exportedAt) + ' (' + new Date(p.exportedAt).toLocaleDateString('fr-FR') + ')' : 'Date de création inconnue'}${p.lastDay ? ' · dernière révision le ' + U.fmtDay(p.lastDay) : ''}</p>
+        <div class="bk-sum">
+          <div><b>Niv. ${p.level}</b><small>${U.esc(p.title)}</small></div>
+          <div><b>${U.fmtNum(p.xp)}</b><small>XP</small></div>
+          <div><b>${p.lessons}</b><small>leçons</small></div>
+          <div><b>${p.cards}</b><small>cartes vues</small></div>
+          <div><b>${p.badges}</b><small>badges</small></div>
+          <div><b>${p.exams}</b><small>examens</small></div>
+        </div>
+        ${hasCurrent ? `<div class="co trap mt2"><div class="co-h">⚠️ Attention</div>La progression actuelle de cet appareil (${U.fmtNum(cur.xp)} XP) sera <b>remplacée</b>. Si besoin, <a href="#" data-save-first>sauvegarde-la d'abord</a>.</div>` : ''}
+        <div class="row mt2" style="justify-content:flex-end"><button class="btn ghost" data-close>Annuler</button><button class="btn primary" data-ok>✅ Restaurer</button></div>`);
+      const sf = m.el.querySelector('[data-save-first]');
+      if (sf) sf.addEventListener('click', (e) => { e.preventDefault(); backup.download(); });
+      m.el.querySelector('[data-ok]').addEventListener('click', () => {
+        try {
+          App.store.importJSON(text);
+        } catch (e) {
+          App.ui.toast('⚠️', 'Restauration impossible : ' + U.esc(e.message));
+          return;
+        }
+        const s = App.store.state.settings;
+        s.onboarded = true;
+        s.lastBackup = p.exportedAt || Date.now();
+        App.store.saveNow();
+        m.close();
+        App.ui.applyTheme();
+        App.ui.applyTypo();
+        App.layout.applyNav();
+        App.layout.refresh();
+        App.fx.sound('level');
+        App.fx.confetti(0.8);
+        App.ui.toast('👋', `<b>Bon retour${p.name ? ', ' + U.esc(p.name) : ''} !</b><div class="small muted">Progression restaurée : niveau ${p.level}, ${U.fmtNum(p.xp)} XP.</div>`, '', 4500);
+        if (after) after(true);
+        if (location.hash === '#/' || location.hash === '' || location.hash === '#') App.router.resolve(); else App.router.go('/');
+      });
+    },
+
+    /* Faut-il rappeler de sauvegarder ? */
+    due() {
+      const st = App.store.state;
+      const every = st.settings.backupEvery == null ? 3 : st.settings.backupEvery;
+      if (!every || st.xp < 30) return null;
+      const now = Date.now();
+      if (st.settings.backupSnooze && now < st.settings.backupSnooze) return null;
+      const ref = st.settings.lastBackup || st.created || now;
+      const days = Math.floor((now - ref) / DAY);
+      return days >= every ? { days, never: !st.settings.lastBackup } : null;
+    },
+
+    reminderHtml() {
+      const d = backup.due();
+      if (!d) return '';
+      const n = backup.name();
+      return `<div class="bk-remind" id="bkRemind"><span class="bk-ico">💾</span>
+        <div class="grow"><b>${n ? n + ', pense' : 'Pense'} à sauvegarder ta progression</b><div class="small muted">${d.never ? 'Tu n\'as encore jamais téléchargé de sauvegarde.' : 'Dernière sauvegarde il y a ' + d.days + ' jours.'} Elle te protège si le navigateur est effacé ou si tu changes d'appareil.</div></div>
+        <div class="row"><button class="btn sm primary" data-bk-save>Sauvegarder</button><button class="btn sm ghost" data-bk-later>Plus tard</button></div></div>`;
+    },
+
+    bindReminder(root) {
+      const box = root.querySelector('#bkRemind');
+      if (!box) return;
+      box.querySelector('[data-bk-save]').addEventListener('click', () => { backup.download(); box.remove(); });
+      box.querySelector('[data-bk-later]').addEventListener('click', () => { App.store.state.settings.backupSnooze = Date.now() + DAY; App.store.save(); box.remove(); });
+    },
+
+    /* Choix de la fréquence des rappels */
+    everyControl() {
+      const cur = App.store.state.settings.backupEvery == null ? 3 : App.store.state.settings.backupEvery;
+      return `<div class="seg" data-bk-every>${[[1, 'Chaque jour'], [3, 'Tous les 3 jours'], [7, 'Chaque semaine'], [0, 'Jamais']].map(([k, l]) => `<button type="button" data-v="${k}" class="${cur === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+    },
+    bindEvery(root) {
+      U.$$('[data-bk-every] button', root).forEach((b) => b.addEventListener('click', () => {
+        App.store.state.settings.backupEvery = +b.dataset.v;
+        App.store.save();
+        U.$$('[data-bk-every] button', root).forEach((x) => x.classList.toggle('on', x === b));
+      }));
+    },
+
+    lastLabel() {
+      const t = App.store.state.settings.lastBackup;
+      return t ? U.ago(t) + ' (' + new Date(t).toLocaleDateString('fr-FR') + ')' : 'jamais';
+    }
+  });
+
+  /* Glisser-déposer d'un fichier de sauvegarde n'importe où sur la fenêtre (PC) */
+  let dragTimer = null;
+  window.addEventListener('dragover', (e) => {
+    if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes('Files')) return;
+    e.preventDefault();
+    document.documentElement.classList.add('drop-on');
+    clearTimeout(dragTimer);
+    dragTimer = setTimeout(() => document.documentElement.classList.remove('drop-on'), 300);
+  });
+  window.addEventListener('drop', (e) => {
+    if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+    e.preventDefault();
+    document.documentElement.classList.remove('drop-on');
+    const f = e.dataTransfer.files[0];
+    if (!/\.json$/i.test(f.name) && f.type !== 'application/json') { App.ui.toast('⚠️', 'Dépose un fichier de sauvegarde <b>.json</b>.'); return; }
+    const open = document.querySelector('.modal-bg');
+    if (open) open.remove();
+    backup.readFile(f);
+  });
 })();
 
 </script>
@@ -9293,7 +9543,8 @@ fi`) },
         App.fx.sound('end');
         if (pct >= 0.8 && n >= 5) App.fx.confetti(0.8);
         const emoji = n === 0 ? '👋' : pct >= 0.9 ? '🏆' : pct >= 0.7 ? '🎉' : pct >= 0.5 ? '💪' : '📚';
-        const msg = n === 0 ? 'Aucune réponse cette fois.' : pct >= 0.9 ? 'Excellent ! Tu maîtrises.' : pct >= 0.7 ? 'Très bien ! Encore un effort sur les erreurs ci-dessous.' : pct >= 0.5 ? 'C\'est en bonne voie. Relis les explications des erreurs.' : 'Chaque erreur est une leçon : elles sont dans ton carnet, on les reverra.';
+        const nm = App.backup.name();
+        const msg = n === 0 ? 'Aucune réponse cette fois.' : pct >= 0.9 ? `Excellent${nm ? ' ' + nm : ''} ! Tu maîtrises.` : pct >= 0.7 ? `Très bien${nm ? ' ' + nm : ''} ! Encore un effort sur les erreurs ci-dessous.` : pct >= 0.5 ? `C'est en bonne voie${nm ? ', ' + nm : ''}. Relis les explications des erreurs.` : `${nm ? nm + ', c' : 'C'}haque erreur est une leçon : elles sont dans ton carnet, on les reverra.`;
         const wrong = S.results.filter((r) => !r.ok);
         App.ui.setFocus(false);
         v.innerHTML = `
@@ -9445,6 +9696,7 @@ fi`) },
         </div>
       </section>
 
+      ${App.backup.reminderHtml() ? '<div class="mt2">' + App.backup.reminderHtml() + '</div>' : ''}
       <div class="grid k4 mt2">
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico">⭐</span><div><div class="v">Niv. ${L.level}</div><div class="l">${L.title}</div></div></a>
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico"><span class="flame">🔥</span></span><div><div class="v acc-t">${streak} j</div><div class="l">série (record ${st.streak.best})</div></div></a>
@@ -9475,6 +9727,7 @@ fi`) },
       <div class="row between mt3"><h2 class="mb0">Tes modules</h2><a href="#/plan" class="small">Voir le plan →</a></div>
       <div class="mod-grid mt1">${App.content.modules.map((m) => modCard(m, today)).join('')}</div>
     `);
+    App.backup.bindReminder(App.ui.root());
   });
 
   function modCard(m, today) {
@@ -9491,35 +9744,99 @@ fi`) },
       <div class="m-meta">${when}<span>${done}/${m.lessons.length} leçons</span></div>
     </a>`;
   }
-  /* Premier lancement : accueil, prénom, méthode en 3 temps, choix de police et de taille */
+  /* Premier lancement : assistant en 4 étapes (ou restauration d'une sauvegarde existante) */
   function onboard() {
     const st = App.store.state;
     if (st.settings.onboarded) return;
     if (st.xp > 0) { st.settings.onboarded = true; App.store.save(); return; }
-    const m = App.ui.modal(`
-      <div class="onb">
-        <div class="big-emoji">📡</div>
-        <h2 class="center mt1">Bienvenue dans ta révision du concours MEF</h2>
-        <p class="center muted">Systèmes &amp; Réseaux · 100 % hors ligne · ta progression reste sur cet appareil.</p>
-        <div class="onb-steps">
-          <div><span>📖</span><b>Comprendre</b><small>Leçons courtes, l'essentiel en 30 s, schémas animés.</small></div>
-          <div><span>🎯</span><b>S'entraîner</b><small>QCM, calculs infinis, cartes qui reviennent au bon moment.</small></div>
-          <div><span>🏁</span><b>Se tester</b><small>Examens blancs chronométrés et carnet d'erreurs.</small></div>
-        </div>
-        <label class="lbl mt2" for="onbName">Ton prénom (facultatif)</label>
-        <input class="input" id="onbName" autocomplete="given-name" placeholder="Ex. : Aïcha">
-        <div class="mt2" id="onbTypo">${App.ui.typoControls()}</div>
-        <button class="btn primary lg block mt3" id="onbGo">C'est parti 🚀</button>
-      </div>`, { wide: true, onClose: () => { st.settings.onboarded = true; App.store.save(); } });
-    App.ui.bindTypo(m.el.querySelector('#onbTypo'));
-    m.el.querySelector('#onbGo').addEventListener('click', () => {
-      const n = m.el.querySelector('#onbName').value.trim();
-      if (n) st.settings.name = n;
-      st.settings.onboarded = true;
-      App.store.save();
+    const S = st.settings;
+    let step = 0;
+    const m = App.ui.modal('<div class="onb" id="onb"></div>', { wide: true, locked: true, onClose: () => { S.onboarded = true; App.store.save(); } });
+    const box = m.el.querySelector('#onb');
+    const dots = (n) => `<div class="onb-dots">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
+    const finish = () => {
+      S.onboarded = true;
+      App.store.saveNow();
       m.close();
+      App.fx.sound('level');
+      App.fx.confetti(0.9);
+      const n = App.backup.name();
+      App.ui.toast('🚀', `<b>C'est parti${n ? ', ' + n : ''} !</b><div class="small muted">Commence par la séance du jour ou par un pré-test.</div>`, '', 4500);
       App.router.resolve();
-    });
+    };
+
+    const views = [
+      // 0 — accueil : nouvelle révision ou restauration
+      () => `
+        <div class="big-emoji">📡</div>
+        <h2 class="center mt1">Bienvenue !</h2>
+        <p class="center muted">Ta révision du concours MEF — Systèmes &amp; Réseaux.<br>100 % hors ligne, ta progression reste sur cet appareil.</p>
+        <div class="onb-choice mt2">
+          <button class="onb-opt" data-go="new"><span class="e">✨</span><span><b>C'est ma première fois</b><small>Je crée mon profil en 30 secondes.</small></span></button>
+          <button class="onb-opt" data-go="restore"><span class="e">📂</span><span><b>J'ai déjà une sauvegarde</b><small>Je reprends ma progression (fichier <code>.json</code> téléchargé depuis l'application, sur ce téléphone ou un autre appareil).</small></span></button>
+        </div>
+        <p class="center tiny muted mt2 hide-m">Astuce : tu peux aussi glisser-déposer ton fichier de sauvegarde n'importe où dans la fenêtre.</p>`,
+      // 1 — toi
+      () => `${dots(1)}
+        <h2 class="center">Faisons connaissance 👋</h2>
+        <label class="lbl mt2" for="onbName">Comment t'appelles-tu ?</label>
+        <input class="input onb-name" id="onbName" autocomplete="given-name" maxlength="30" placeholder="Ton prénom" value="${U.esc(S.name || '')}">
+        <div class="tiny muted mt1">Il sert à personnaliser l'accueil, les encouragements et le nom de tes sauvegardes.</div>
+        <label class="lbl mt2" for="onbDate">Date du concours</label>
+        <input class="input" type="date" id="onbDate" value="${S.examDate}">
+        <div class="lbl mt2">Ton rythme quotidien</div>
+        <div class="onb-goals">${[[100, '🌱', 'Tranquille', '≈ 15 min / jour'], [200, '🔥', 'Sérieux', '≈ 30 min / jour'], [400, '🚀', 'Intensif', '≈ 1 h / jour']].map(([v, e, t, d]) => `<button type="button" data-goal="${v}" class="${S.dailyGoal === v ? 'on' : ''}"><span class="e">${e}</span><b>${t}</b><small>${d}</small><small class="pri-t">${v} XP</small></button>`).join('')}</div>
+        <div class="onb-nav"><button class="btn ghost" data-back>◀ Retour</button><button class="btn primary" data-next id="onbNext">Continuer ▶</button></div>`,
+      // 2 — affichage
+      () => `${dots(2)}
+        <h2 class="center">${App.backup.name() ? App.backup.name() + ', choisis' : 'Choisis'} ton confort de lecture</h2>
+        <div class="mt2" id="onbTypo">${App.ui.typoControls()}</div>
+        <div class="lbl mt2">Thème</div>
+        <div class="seg" id="onbTheme">${[['auto', '🌗 Auto'], ['light', '☀️ Clair'], ['dark', '🌙 Sombre']].map(([k, l]) => `<button type="button" data-t="${k}" class="${S.theme === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        <div class="onb-nav"><button class="btn ghost" data-back>◀ Retour</button><button class="btn primary" data-next>Continuer ▶</button></div>`,
+      // 3 — sauvegarde
+      () => `${dots(3)}
+        <h2 class="center">Ne perds jamais ta progression 💾</h2>
+        <div class="onb-save mt2">
+          <div><span>✅</span><p><b>Enregistrement automatique</b> sur cet appareil, à chaque réponse.</p></div>
+          <div><span>⬇️</span><p><b>Sauvegarde en fichier</b> : un clic sur 💾 télécharge ta progression. Garde-la (Téléchargements, clé USB, WhatsApp…).</p></div>
+          <div><span>📂</span><p><b>Restauration</b> : sur un autre appareil ou après un nettoyage du navigateur, ouvre l'application et choisis « J'ai déjà une sauvegarde ».</p></div>
+        </div>
+        <div class="lbl mt2">Me rappeler de sauvegarder</div>
+        ${App.backup.everyControl()}
+        <div class="onb-nav"><button class="btn ghost" data-back>◀ Retour</button><button class="btn primary lg" data-done>🚀 Commencer${App.backup.name() ? ', ' + App.backup.name() : ''} !</button></div>`
+    ];
+
+    function draw() {
+      box.innerHTML = views[step]();
+      App.ui.hydrate(box);
+      const q = (sel) => box.querySelector(sel);
+      U.$$('[data-back]', box).forEach((b) => b.addEventListener('click', () => { step = Math.max(0, step - 1); draw(); }));
+      U.$$('[data-next]', box).forEach((b) => b.addEventListener('click', () => { step++; draw(); }));
+      if (step === 0) {
+        q('[data-go="new"]').addEventListener('click', () => { step = 1; draw(); });
+        q('[data-go="restore"]').addEventListener('click', () => App.backup.pick((ok) => { if (ok) m.close(); }));
+      } else if (step === 1) {
+        const inp = q('#onbName');
+        const nx = q('#onbNext');
+        const upd = () => { S.name = inp.value.trim(); App.store.save(); nx.textContent = S.name ? `Enchanté, ${S.name} ▶` : 'Continuer sans prénom ▶'; };
+        inp.addEventListener('input', upd);
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nx.click(); } });
+        upd();
+        setTimeout(() => inp.focus(), 60);
+        q('#onbDate').addEventListener('change', (e) => { if (e.target.value) { S.examDate = e.target.value; App.store.save(); } });
+        U.$$('[data-goal]', box).forEach((b) => b.addEventListener('click', () => { S.dailyGoal = +b.dataset.goal; App.store.save(); U.$$('[data-goal]', box).forEach((x) => x.classList.toggle('on', x === b)); }));
+      } else if (step === 2) {
+        App.ui.bindTypo(q('#onbTypo'));
+        U.$$('#onbTheme button', box).forEach((b) => b.addEventListener('click', () => { S.theme = b.dataset.t; App.store.save(); App.ui.applyTheme(); App.layout.toolIcons(); U.$$('#onbTheme button', box).forEach((x) => x.classList.toggle('on', x === b)); }));
+      } else if (step === 3) {
+        App.backup.bindEvery(box);
+        q('[data-done]').addEventListener('click', finish);
+      }
+      const md = m.el.querySelector('.modal');
+      if (md) md.scrollTop = 0;
+    }
+    draw();
   }
 
   App.home = { modCard, onboard };
@@ -10583,10 +10900,13 @@ fi`) },
         </div>
         <label class="switch"><input type="checkbox" id="sSound" ${st.settings.sound ? 'checked' : ''}> Sons de réussite / erreur</label>
       </div>
-      <h2 class="mt3">💾 Ma progression</h2>
-      <div class="card">
-        <p class="small muted">${App.store.persistent ? 'Ta progression est enregistrée automatiquement dans ce navigateur (sur cet appareil).' : '⚠️ Le stockage local est bloqué dans ce navigateur : exporte ta progression régulièrement.'} Pour passer du PC au téléphone (ou en sauvegarde), exporte puis importe le fichier.</p>
-        <div class="row"><button class="btn primary" id="exp">⬇️ Exporter</button><label class="btn" style="cursor:pointer">⬆️ Importer<input type="file" accept=".json,application/json" id="imp" hidden></label><span class="grow"></span><button class="btn ghost" id="rst">Réinitialiser…</button></div>
+      <h2 class="mt3">💾 Sauvegarde de ma progression</h2>
+      <div class="card stack" id="bkBox">
+        <p class="small muted mb0">${App.store.persistent ? 'Ta progression est enregistrée automatiquement dans ce navigateur, sur cet appareil.' : '⚠️ Le stockage local est bloqué dans ce navigateur : télécharge une sauvegarde à la fin de chaque séance.'} Une <b>sauvegarde en fichier</b> te protège si le navigateur est nettoyé, et permet de passer du PC au téléphone (et inversement).</p>
+        <div class="bk-status"><span>🕒</span><div>Dernière sauvegarde : <b>${App.backup.lastLabel()}</b></div></div>
+        <div class="row"><button class="btn primary" id="exp">💾 Sauvegarder maintenant</button><button class="btn" id="imp">📂 Restaurer une sauvegarde</button><span class="grow"></span><button class="btn ghost" id="rst">Réinitialiser…</button></div>
+        <div class="row"><span class="set-lbl">Me rappeler :</span>${App.backup.everyControl()}</div>
+        <div class="tiny muted">Sur ordinateur, tu peux aussi glisser-déposer un fichier de sauvegarde sur la fenêtre. Sur téléphone, le fichier arrive dans « Téléchargements » : envoie-le-toi (WhatsApp, e-mail) pour le garder ailleurs.</div>
       </div>
       <div class="card mt2 small muted"><b>À propos.</b> Application de révision 100 % hors ligne, construite à partir du plan « Concours MEF Niger — 9 séances » et des supports de cours de l'ESTN (M. M. Maazou). Méthodes : rappel actif, répétition espacée, pré-test, alternance, exemples résolus, carnet d'erreurs. Version ${App.version}.</div>`);
     const set = (k, val) => { st.settings[k] = val; App.store.save(); App.layout.refresh(); };
@@ -10600,27 +10920,10 @@ fi`) },
     U.$$('#sNav button').forEach((b) => b.addEventListener('click', () => { set('nav', b.dataset.n); App.layout.applyNav(); U.$$('#sNav button').forEach((x) => x.classList.toggle('on', x === b)); }));
     const fsb = v.querySelector('#sFs');
     if (fsb) fsb.addEventListener('click', () => App.ui.fullscreen.toggle());
-    v.querySelector('#exp').addEventListener('click', () => {
-      const blob = new Blob([App.store.exportJSON()], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'progression-revision-mef-' + U.dayKey() + '.json';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-      App.ui.toast('💾', 'Progression exportée.');
-    });
-    v.querySelector('#imp').addEventListener('change', (e) => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const rd = new FileReader();
-      rd.onload = () => {
-        try { App.store.importJSON(rd.result); App.ui.applyTheme(); App.ui.toast('✅', 'Progression importée.'); R.go('/'); App.layout.refresh(); }
-        catch (err) { App.ui.toast('⚠️', 'Fichier invalide : ' + U.esc(err.message)); }
-      };
-      rd.readAsText(f);
-    });
-    v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.layout.refresh(); R.go('/'); }, true));
+    v.querySelector('#exp').addEventListener('click', () => { App.backup.download(); v.querySelector('.bk-status b').textContent = App.backup.lastLabel(); });
+    v.querySelector('#imp').addEventListener('click', () => App.backup.pick());
+    App.backup.bindEvery(v.querySelector('#bkBox'));
+    v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.ui.applyTypo(); App.layout.applyNav(); App.layout.refresh(); R.go('/'); setTimeout(App.home.onboard, 300); }, true));
   });
 })();
 

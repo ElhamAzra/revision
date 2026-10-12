@@ -89,6 +89,7 @@
         </div>
       </section>
 
+      ${App.backup.reminderHtml() ? '<div class="mt2">' + App.backup.reminderHtml() + '</div>' : ''}
       <div class="grid k4 mt2">
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico">⭐</span><div><div class="v">Niv. ${L.level}</div><div class="l">${L.title}</div></div></a>
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico"><span class="flame">🔥</span></span><div><div class="v acc-t">${streak} j</div><div class="l">série (record ${st.streak.best})</div></div></a>
@@ -119,6 +120,7 @@
       <div class="row between mt3"><h2 class="mb0">Tes modules</h2><a href="#/plan" class="small">Voir le plan →</a></div>
       <div class="mod-grid mt1">${App.content.modules.map((m) => modCard(m, today)).join('')}</div>
     `);
+    App.backup.bindReminder(App.ui.root());
   });
 
   function modCard(m, today) {
@@ -135,35 +137,99 @@
       <div class="m-meta">${when}<span>${done}/${m.lessons.length} leçons</span></div>
     </a>`;
   }
-  /* Premier lancement : accueil, prénom, méthode en 3 temps, choix de police et de taille */
+  /* Premier lancement : assistant en 4 étapes (ou restauration d'une sauvegarde existante) */
   function onboard() {
     const st = App.store.state;
     if (st.settings.onboarded) return;
     if (st.xp > 0) { st.settings.onboarded = true; App.store.save(); return; }
-    const m = App.ui.modal(`
-      <div class="onb">
-        <div class="big-emoji">📡</div>
-        <h2 class="center mt1">Bienvenue dans ta révision du concours MEF</h2>
-        <p class="center muted">Systèmes &amp; Réseaux · 100 % hors ligne · ta progression reste sur cet appareil.</p>
-        <div class="onb-steps">
-          <div><span>📖</span><b>Comprendre</b><small>Leçons courtes, l'essentiel en 30 s, schémas animés.</small></div>
-          <div><span>🎯</span><b>S'entraîner</b><small>QCM, calculs infinis, cartes qui reviennent au bon moment.</small></div>
-          <div><span>🏁</span><b>Se tester</b><small>Examens blancs chronométrés et carnet d'erreurs.</small></div>
-        </div>
-        <label class="lbl mt2" for="onbName">Ton prénom (facultatif)</label>
-        <input class="input" id="onbName" autocomplete="given-name" placeholder="Ex. : Aïcha">
-        <div class="mt2" id="onbTypo">${App.ui.typoControls()}</div>
-        <button class="btn primary lg block mt3" id="onbGo">C'est parti 🚀</button>
-      </div>`, { wide: true, onClose: () => { st.settings.onboarded = true; App.store.save(); } });
-    App.ui.bindTypo(m.el.querySelector('#onbTypo'));
-    m.el.querySelector('#onbGo').addEventListener('click', () => {
-      const n = m.el.querySelector('#onbName').value.trim();
-      if (n) st.settings.name = n;
-      st.settings.onboarded = true;
-      App.store.save();
+    const S = st.settings;
+    let step = 0;
+    const m = App.ui.modal('<div class="onb" id="onb"></div>', { wide: true, locked: true, onClose: () => { S.onboarded = true; App.store.save(); } });
+    const box = m.el.querySelector('#onb');
+    const dots = (n) => `<div class="onb-dots">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
+    const finish = () => {
+      S.onboarded = true;
+      App.store.saveNow();
       m.close();
+      App.fx.sound('level');
+      App.fx.confetti(0.9);
+      const n = App.backup.name();
+      App.ui.toast('🚀', `<b>C'est parti${n ? ', ' + n : ''} !</b><div class="small muted">Commence par la séance du jour ou par un pré-test.</div>`, '', 4500);
       App.router.resolve();
-    });
+    };
+
+    const views = [
+      // 0 — accueil : nouvelle révision ou restauration
+      () => `
+        <div class="big-emoji">📡</div>
+        <h2 class="center mt1">Bienvenue !</h2>
+        <p class="center muted">Ta révision du concours MEF — Systèmes &amp; Réseaux.<br>100 % hors ligne, ta progression reste sur cet appareil.</p>
+        <div class="onb-choice mt2">
+          <button class="onb-opt" data-go="new"><span class="e">✨</span><span><b>C'est ma première fois</b><small>Je crée mon profil en 30 secondes.</small></span></button>
+          <button class="onb-opt" data-go="restore"><span class="e">📂</span><span><b>J'ai déjà une sauvegarde</b><small>Je reprends ma progression (fichier <code>.json</code> téléchargé depuis l'application, sur ce téléphone ou un autre appareil).</small></span></button>
+        </div>
+        <p class="center tiny muted mt2 hide-m">Astuce : tu peux aussi glisser-déposer ton fichier de sauvegarde n'importe où dans la fenêtre.</p>`,
+      // 1 — toi
+      () => `${dots(1)}
+        <h2 class="center">Faisons connaissance 👋</h2>
+        <label class="lbl mt2" for="onbName">Comment t'appelles-tu ?</label>
+        <input class="input onb-name" id="onbName" autocomplete="given-name" maxlength="30" placeholder="Ton prénom" value="${U.esc(S.name || '')}">
+        <div class="tiny muted mt1">Il sert à personnaliser l'accueil, les encouragements et le nom de tes sauvegardes.</div>
+        <label class="lbl mt2" for="onbDate">Date du concours</label>
+        <input class="input" type="date" id="onbDate" value="${S.examDate}">
+        <div class="lbl mt2">Ton rythme quotidien</div>
+        <div class="onb-goals">${[[100, '🌱', 'Tranquille', '≈ 15 min / jour'], [200, '🔥', 'Sérieux', '≈ 30 min / jour'], [400, '🚀', 'Intensif', '≈ 1 h / jour']].map(([v, e, t, d]) => `<button type="button" data-goal="${v}" class="${S.dailyGoal === v ? 'on' : ''}"><span class="e">${e}</span><b>${t}</b><small>${d}</small><small class="pri-t">${v} XP</small></button>`).join('')}</div>
+        <div class="onb-nav"><button class="btn ghost" data-back>◀ Retour</button><button class="btn primary" data-next id="onbNext">Continuer ▶</button></div>`,
+      // 2 — affichage
+      () => `${dots(2)}
+        <h2 class="center">${App.backup.name() ? App.backup.name() + ', choisis' : 'Choisis'} ton confort de lecture</h2>
+        <div class="mt2" id="onbTypo">${App.ui.typoControls()}</div>
+        <div class="lbl mt2">Thème</div>
+        <div class="seg" id="onbTheme">${[['auto', '🌗 Auto'], ['light', '☀️ Clair'], ['dark', '🌙 Sombre']].map(([k, l]) => `<button type="button" data-t="${k}" class="${S.theme === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        <div class="onb-nav"><button class="btn ghost" data-back>◀ Retour</button><button class="btn primary" data-next>Continuer ▶</button></div>`,
+      // 3 — sauvegarde
+      () => `${dots(3)}
+        <h2 class="center">Ne perds jamais ta progression 💾</h2>
+        <div class="onb-save mt2">
+          <div><span>✅</span><p><b>Enregistrement automatique</b> sur cet appareil, à chaque réponse.</p></div>
+          <div><span>⬇️</span><p><b>Sauvegarde en fichier</b> : un clic sur 💾 télécharge ta progression. Garde-la (Téléchargements, clé USB, WhatsApp…).</p></div>
+          <div><span>📂</span><p><b>Restauration</b> : sur un autre appareil ou après un nettoyage du navigateur, ouvre l'application et choisis « J'ai déjà une sauvegarde ».</p></div>
+        </div>
+        <div class="lbl mt2">Me rappeler de sauvegarder</div>
+        ${App.backup.everyControl()}
+        <div class="onb-nav"><button class="btn ghost" data-back>◀ Retour</button><button class="btn primary lg" data-done>🚀 Commencer${App.backup.name() ? ', ' + App.backup.name() : ''} !</button></div>`
+    ];
+
+    function draw() {
+      box.innerHTML = views[step]();
+      App.ui.hydrate(box);
+      const q = (sel) => box.querySelector(sel);
+      U.$$('[data-back]', box).forEach((b) => b.addEventListener('click', () => { step = Math.max(0, step - 1); draw(); }));
+      U.$$('[data-next]', box).forEach((b) => b.addEventListener('click', () => { step++; draw(); }));
+      if (step === 0) {
+        q('[data-go="new"]').addEventListener('click', () => { step = 1; draw(); });
+        q('[data-go="restore"]').addEventListener('click', () => App.backup.pick((ok) => { if (ok) m.close(); }));
+      } else if (step === 1) {
+        const inp = q('#onbName');
+        const nx = q('#onbNext');
+        const upd = () => { S.name = inp.value.trim(); App.store.save(); nx.textContent = S.name ? `Enchanté, ${S.name} ▶` : 'Continuer sans prénom ▶'; };
+        inp.addEventListener('input', upd);
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nx.click(); } });
+        upd();
+        setTimeout(() => inp.focus(), 60);
+        q('#onbDate').addEventListener('change', (e) => { if (e.target.value) { S.examDate = e.target.value; App.store.save(); } });
+        U.$$('[data-goal]', box).forEach((b) => b.addEventListener('click', () => { S.dailyGoal = +b.dataset.goal; App.store.save(); U.$$('[data-goal]', box).forEach((x) => x.classList.toggle('on', x === b)); }));
+      } else if (step === 2) {
+        App.ui.bindTypo(q('#onbTypo'));
+        U.$$('#onbTheme button', box).forEach((b) => b.addEventListener('click', () => { S.theme = b.dataset.t; App.store.save(); App.ui.applyTheme(); App.layout.toolIcons(); U.$$('#onbTheme button', box).forEach((x) => x.classList.toggle('on', x === b)); }));
+      } else if (step === 3) {
+        App.backup.bindEvery(box);
+        q('[data-done]').addEventListener('click', finish);
+      }
+      const md = m.el.querySelector('.modal');
+      if (md) md.scrollTop = 0;
+    }
+    draw();
   }
 
   App.home = { modCard, onboard };

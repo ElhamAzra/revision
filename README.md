@@ -12,7 +12,9 @@ Aucune installation, aucune connexion Internet.
 | **Téléphone Android** | Copier **`revision-concours-mef.html`** (un seul fichier, tout compris) sur le téléphone (WhatsApp, câble, clé), puis l'ouvrir avec Chrome ou Firefox. |
 | **iPhone** | L'aperçu de l'app Fichiers ne lance pas le JavaScript : ouvrir le fichier avec une app comme *Documents* (Readdle), ou publier le dossier `app/` sur GitHub Pages et l'ajouter à l'écran d'accueil (il fonctionne ensuite hors ligne). |
 
-La progression (XP, cartes, erreurs, badges) est enregistrée dans le navigateur. Pour passer du PC au téléphone : **Profil → Exporter**, puis **Importer** sur l'autre appareil.
+Au **premier lancement**, un court assistant demande ton prénom, ta date de concours, ton rythme quotidien et ton confort de lecture, ou propose de **restaurer une sauvegarde existante**.
+
+**Sauvegarde** : la progression (XP, cartes, erreurs, badges, réglages) est enregistrée automatiquement dans le navigateur. Pour ne rien perdre et changer d'appareil, clique sur **💾** (menu) ou **Profil → Sauvegarder maintenant** : un fichier `sauvegarde-revision-mef-<prénom>-<date>.json` est téléchargé. Sur l'autre appareil, choisis **« J'ai déjà une sauvegarde »** à l'ouverture, ou **Profil → Restaurer une sauvegarde** (ou glisse le fichier sur la fenêtre, sur ordinateur). Un aperçu (niveau, XP, leçons, date) s'affiche avant de confirmer. L'application rappelle de sauvegarder (tous les jours, 3 jours, chaque semaine ou jamais).
 
 ## Confort d'utilisation
 

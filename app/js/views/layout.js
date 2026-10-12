@@ -50,6 +50,7 @@
             <div class="side-foot">
               <div class="side-player" id="sidePlayer"></div>
               <div class="side-tools">
+                <button class="tool" data-tool="save" title="Sauvegarder ma progression (fichier)" aria-label="Sauvegarder ma progression">💾</button>
                 <button class="tool" data-tool="theme" title="Thème clair / sombre" aria-label="Changer de thème"></button>
                 <button class="tool" data-tool="fs" title="Plein écran (F)" aria-label="Plein écran"></button>
                 <button class="tool" data-tool="nav" title="Replier / déplier le menu" aria-label="Replier le menu"></button>
@@ -97,6 +98,7 @@
 
     tool(name) {
       if (name === 'fs') App.ui.fullscreen.toggle();
+      else if (name === 'save') App.backup.download();
       else if (name === 'theme') {
         const st = App.store.state.settings;
         st.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';

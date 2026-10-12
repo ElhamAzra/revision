@@ -8,7 +8,7 @@
   const defaults = () => ({
     v: 1,
     created: Date.now(),
-    settings: { theme: 'auto', sound: true, examDate: '2026-10-19', dailyGoal: 200, newCardsPerSession: 20, name: '', font: 'nunito', textSize: 'm', nav: 'auto', onboarded: false, last: null },
+    settings: { theme: 'auto', sound: true, examDate: '2026-10-19', dailyGoal: 200, newCardsPerSession: 20, name: '', font: 'nunito', textSize: 'm', nav: 'auto', onboarded: false, last: null, lastBackup: null, backupEvery: 3 },
     xp: 0,
     daily: {},          // { 'AAAA-MM-JJ': { xp, answered, correct, cards, goalHit } }
     streak: { count: 0, best: 0, last: null },

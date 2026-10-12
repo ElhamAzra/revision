@@ -132,7 +132,8 @@
         App.fx.sound('end');
         if (pct >= 0.8 && n >= 5) App.fx.confetti(0.8);
         const emoji = n === 0 ? '👋' : pct >= 0.9 ? '🏆' : pct >= 0.7 ? '🎉' : pct >= 0.5 ? '💪' : '📚';
-        const msg = n === 0 ? 'Aucune réponse cette fois.' : pct >= 0.9 ? 'Excellent ! Tu maîtrises.' : pct >= 0.7 ? 'Très bien ! Encore un effort sur les erreurs ci-dessous.' : pct >= 0.5 ? 'C\'est en bonne voie. Relis les explications des erreurs.' : 'Chaque erreur est une leçon : elles sont dans ton carnet, on les reverra.';
+        const nm = App.backup.name();
+        const msg = n === 0 ? 'Aucune réponse cette fois.' : pct >= 0.9 ? `Excellent${nm ? ' ' + nm : ''} ! Tu maîtrises.` : pct >= 0.7 ? `Très bien${nm ? ' ' + nm : ''} ! Encore un effort sur les erreurs ci-dessous.` : pct >= 0.5 ? `C'est en bonne voie${nm ? ', ' + nm : ''}. Relis les explications des erreurs.` : `${nm ? nm + ', c' : 'C'}haque erreur est une leçon : elles sont dans ton carnet, on les reverra.`;
         const wrong = S.results.filter((r) => !r.ok);
         App.ui.setFocus(false);
         v.innerHTML = `

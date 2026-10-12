@@ -112,7 +112,7 @@
       App.fx.confetti(1.2);
       App.ui.modal(`
         <div class="big-emoji">🎉</div>
-        <h2 class="center mt1">Niveau ${info.level} !</h2>
+        <h2 class="center mt1">${App.backup && App.backup.name() ? 'Bravo ' + App.backup.name() + ', niveau ' : 'Niveau '}${info.level} !</h2>
         <p class="center">Tu es maintenant <b class="pri-t">${info.title}</b>.</p>
         <p class="center muted small">Prochain palier : ${U.fmtNum(info.next)} XP. Continue, chaque question te rapproche du concours.</p>
         <div class="center mt2"><button class="btn primary" data-close>Continuer 🚀</button></div>`);

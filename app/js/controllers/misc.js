@@ -135,10 +135,13 @@
         </div>
         <label class="switch"><input type="checkbox" id="sSound" ${st.settings.sound ? 'checked' : ''}> Sons de réussite / erreur</label>
       </div>
-      <h2 class="mt3">💾 Ma progression</h2>
-      <div class="card">
-        <p class="small muted">${App.store.persistent ? 'Ta progression est enregistrée automatiquement dans ce navigateur (sur cet appareil).' : '⚠️ Le stockage local est bloqué dans ce navigateur : exporte ta progression régulièrement.'} Pour passer du PC au téléphone (ou en sauvegarde), exporte puis importe le fichier.</p>
-        <div class="row"><button class="btn primary" id="exp">⬇️ Exporter</button><label class="btn" style="cursor:pointer">⬆️ Importer<input type="file" accept=".json,application/json" id="imp" hidden></label><span class="grow"></span><button class="btn ghost" id="rst">Réinitialiser…</button></div>
+      <h2 class="mt3">💾 Sauvegarde de ma progression</h2>
+      <div class="card stack" id="bkBox">
+        <p class="small muted mb0">${App.store.persistent ? 'Ta progression est enregistrée automatiquement dans ce navigateur, sur cet appareil.' : '⚠️ Le stockage local est bloqué dans ce navigateur : télécharge une sauvegarde à la fin de chaque séance.'} Une <b>sauvegarde en fichier</b> te protège si le navigateur est nettoyé, et permet de passer du PC au téléphone (et inversement).</p>
+        <div class="bk-status"><span>🕒</span><div>Dernière sauvegarde : <b>${App.backup.lastLabel()}</b></div></div>
+        <div class="row"><button class="btn primary" id="exp">💾 Sauvegarder maintenant</button><button class="btn" id="imp">📂 Restaurer une sauvegarde</button><span class="grow"></span><button class="btn ghost" id="rst">Réinitialiser…</button></div>
+        <div class="row"><span class="set-lbl">Me rappeler :</span>${App.backup.everyControl()}</div>
+        <div class="tiny muted">Sur ordinateur, tu peux aussi glisser-déposer un fichier de sauvegarde sur la fenêtre. Sur téléphone, le fichier arrive dans « Téléchargements » : envoie-le-toi (WhatsApp, e-mail) pour le garder ailleurs.</div>
       </div>
       <div class="card mt2 small muted"><b>À propos.</b> Application de révision 100 % hors ligne, construite à partir du plan « Concours MEF Niger — 9 séances » et des supports de cours de l'ESTN (M. M. Maazou). Méthodes : rappel actif, répétition espacée, pré-test, alternance, exemples résolus, carnet d'erreurs. Version ${App.version}.</div>`);
     const set = (k, val) => { st.settings[k] = val; App.store.save(); App.layout.refresh(); };
@@ -152,26 +155,9 @@
     U.$$('#sNav button').forEach((b) => b.addEventListener('click', () => { set('nav', b.dataset.n); App.layout.applyNav(); U.$$('#sNav button').forEach((x) => x.classList.toggle('on', x === b)); }));
     const fsb = v.querySelector('#sFs');
     if (fsb) fsb.addEventListener('click', () => App.ui.fullscreen.toggle());
-    v.querySelector('#exp').addEventListener('click', () => {
-      const blob = new Blob([App.store.exportJSON()], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'progression-revision-mef-' + U.dayKey() + '.json';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-      App.ui.toast('💾', 'Progression exportée.');
-    });
-    v.querySelector('#imp').addEventListener('change', (e) => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const rd = new FileReader();
-      rd.onload = () => {
-        try { App.store.importJSON(rd.result); App.ui.applyTheme(); App.ui.toast('✅', 'Progression importée.'); R.go('/'); App.layout.refresh(); }
-        catch (err) { App.ui.toast('⚠️', 'Fichier invalide : ' + U.esc(err.message)); }
-      };
-      rd.readAsText(f);
-    });
-    v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.layout.refresh(); R.go('/'); }, true));
+    v.querySelector('#exp').addEventListener('click', () => { App.backup.download(); v.querySelector('.bk-status b').textContent = App.backup.lastLabel(); });
+    v.querySelector('#imp').addEventListener('click', () => App.backup.pick());
+    App.backup.bindEvery(v.querySelector('#bkBox'));
+    v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.ui.applyTypo(); App.layout.applyNav(); App.layout.refresh(); R.go('/'); setTimeout(App.home.onboard, 300); }, true));
   });
 })();
