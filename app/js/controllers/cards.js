@@ -30,10 +30,10 @@
         }).join('')}</div>`);
       return;
     }
-    session(query.mod || null);
+    session(query.mod || null, query.g != null && App.guided.active(query.mod));
   });
 
-  function session(modId) {
+  function session(modId, guidedOn) {
     const queue = App.srs.session({ mod: modId });
     const m = modId ? App.content.mod(modId) : null;
     const title = m ? `${m.icon} Cartes — ${m.short || m.title}` : '🃏 Session de cartes';
@@ -136,7 +136,8 @@
       host.innerHTML = `<div class="card pad-lg center"><div class="big-emoji" style="font-size:3.4rem">🧠</div><h2 class="mt1">${reviewed} carte(s) révisée(s)</h2>
         <div class="row mt1" style="justify-content:center"><span class="chip ko">À revoir ${tally[0]}</span><span class="chip warn">Difficile ${tally[1]}</span><span class="chip ok">Bien ${tally[2]}</span><span class="chip pri">Facile ${tally[3]}</span></div>
         <p class="muted mt2">+${xp} XP · prochaine échéance ${App.srs.nextDueLabel(modId) || '—'}</p>
-        <div class="row mt2" style="justify-content:center"><a class="btn primary" href="#/cartes">Autre paquet</a><a class="btn" href="#/entrainement">S'entraîner</a></div></div>`;
+        <div class="row mt2" style="justify-content:center">${guidedOn ? '<a class="btn primary" href="#/seance">🧭 Suite de la séance ▶</a><a class="btn" href="#/cartes">Autre paquet</a>' : '<a class="btn primary" href="#/cartes">Autre paquet</a><a class="btn" href="#/entrainement">S\'entraîner</a>'}</div></div>`;
+      if (guidedOn) App.guided.mark('cartes', modId);
       v.querySelector('#cCount').textContent = 'Terminé';
       App.store.save();
     }

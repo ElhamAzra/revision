@@ -63,6 +63,7 @@
           ${nextL ? `<a class="btn primary" href="#/cours/${m.id}/${nextL.idx}">${done ? '▶ Continuer' : '▶ Commencer'} : ${nextL.title}</a>` : ''}
           ${m.pretest.length && !pre ? `<a class="btn accent" href="#/pretest/${m.id}">🧪 Pré-test (${m.pretest.length} questions)</a>` : ''}
           <a class="btn" href="#/quiz/${m.id}">✅ QCM</a>
+          <a class="btn soft" href="#/seance?mod=${m.id}">🧭 Séance guidée</a>
         </div>
         <div class="small muted mt1">${done}/${m.lessons.length} leçons · ${cc.mastered}/${cc.total} cartes maîtrisées${pre ? ` · pré-test : ${pre.score}/${pre.total}` : ''}</div>
       </div>
@@ -108,6 +109,7 @@
       <div class="lesson-layout" style="--mc:${m.color}">
       <div class="lesson-main">
         ${App.ui.crumbs([['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['Leçon ' + (i + 1)]])}
+        ${App.guided.active(m.id) ? `<a class="guided-pill" href="#/seance">🧭 Séance guidée en cours · étape Leçons (${doneN}/${m.lessons.length}) <b>↩ revenir au parcours</b></a>` : ''}
         <div class="row between" style="align-items:flex-start">
           <div class="grow"><div class="lesson-kicker" style="color:${m.color}">${m.icon} ${m.label} · leçon ${i + 1}/${m.lessons.length} · ${l.min || 5} min</div><h1 class="mt1">${l.title}</h1></div>
           ${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}
@@ -120,7 +122,7 @@
         <div class="lesson-dock">
           ${prev ? `<a class="btn" href="#/cours/${m.id}/${i - 1}" title="${U.esc(prev.title)}">◀<span class="hide-m"> ${U.esc(prev.title)}</span></a>` : `<a class="btn" href="#/cours/${m.id}">◀<span class="hide-m"> Sommaire</span></a>`}
           <button class="btn ${isDone ? 'ghost' : 'ok'}" id="markDone">${isDone ? '✓ Comprise' : '✓ <span class="hide-m">J\'ai compris</span><span class="show-m">Compris</span>'}</button>
-          ${next ? `<a class="btn primary" href="#/cours/${m.id}/${i + 1}" id="nextL" title="${U.esc(next.title)}"><span class="hide-m">${U.esc(next.title)} </span><span class="show-m">Suivante </span>▶</a>` : `<a class="btn primary" href="#/quiz/${m.id}">QCM ▶</a>`}
+          ${next ? `<a class="btn primary" href="#/cours/${m.id}/${i + 1}" id="nextL" title="${U.esc(next.title)}"><span class="hide-m">${U.esc(next.title)} </span><span class="show-m">Suivante </span>▶</a>` : App.guided.active(m.id) ? '<a class="btn primary" href="#/seance">🧭 Suite ▶</a>' : `<a class="btn primary" href="#/quiz/${m.id}">QCM ▶</a>`}
         </div>
       </div>
       ${outline}

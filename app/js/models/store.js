@@ -25,7 +25,8 @@
     exercises: {},      // { exId: { score, max, at } }
     pretest: {},        // { modId: { score, total, at } }
     counters: {},       // compteurs divers pour les badges
-    notes: {}           // { lessonId: texte }
+    notes: {},          // { lessonId: texte }
+    guided: null        // séance guidée du jour { day, mod, done, ... }
   });
 
   let mem = null; // repli si localStorage indisponible

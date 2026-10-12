@@ -82,10 +82,11 @@
       const all = Object.keys(grades).length === e.parts.length;
       v.querySelector('#total').innerHTML = `<div class="small muted">Total ${all ? '' : '(provisoire)'}</div><div class="bignum ${sc / e.points >= 0.7 ? 'ok-t' : sc / e.points >= 0.4 ? 'warn-t' : 'ko-t'}">${U.fmtNum(sc)} / ${e.points}</div>
         ${prev ? `<div class="small muted">Meilleur score précédent : ${U.fmtNum(prev.best || prev.score)} / ${prev.max}</div>` : ''}
-        <div class="row mt2" style="justify-content:center"><button class="btn primary" id="save" ${all ? '' : 'disabled'}>💾 Enregistrer mon score</button><a class="btn" href="#/cours/${m.id}?tab=pratique">Retour</a></div>`;
+        <div class="row mt2" style="justify-content:center"><button class="btn primary" id="save" ${all ? '' : 'disabled'}>💾 Enregistrer mon score</button>${App.guided.active(m.id) ? '<a class="btn" href="#/seance">🧭 Suite de la séance ▶</a>' : `<a class="btn" href="#/cours/${m.id}?tab=pratique">Retour</a>`}</div>`;
       const sb = v.querySelector('#save');
       sb.addEventListener('click', () => {
         App.progress.saveExercise(e.id, sc, e.points);
+        App.guided.mark('exo', m.id);
         App.game.addXP(Math.round(sc * 5) + 10, sb);
         App.ui.toast('✍️', `<b>Score enregistré : ${U.fmtNum(sc)}/${e.points}</b>`);
         if (sc / e.points >= 0.8) App.fx.confetti(0.6);

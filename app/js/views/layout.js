@@ -12,6 +12,7 @@
   const NAV = [
     { sep: 'Apprendre' },
     { href: '#/', ico: '🏠', label: 'Accueil', match: /^\/$/ },
+    { href: '#/seance', ico: '🧭', label: 'Séance guidée', match: /^\/seance/ },
     { href: '#/plan', ico: '🗓️', label: 'Plan de révision', match: /^\/plan/ },
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes mémoire', match: /^\/cartes/, count: () => App.srs.counts().due },
@@ -32,7 +33,7 @@
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance)/ }
   ];
 
   let back = null;

@@ -512,6 +512,34 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .dev-link b { font-family: var(--font-display); font-weight: 600; overflow-wrap: anywhere; }
 @media (max-width: 600px) { .luck { flex-direction: column; text-align: center; } }
 
+/* Parcours (séance guidée, veille) */
+.path { list-style: none; margin: 0; padding: 0; position: relative; }
+.path-step { position: relative; display: flex; gap: .9rem; padding: .2rem 0 1.1rem; }
+.path-step:not(:last-child)::before { content: ""; position: absolute; left: 19px; top: 44px; bottom: 4px; width: 2px; background: var(--border); }
+.path-step.done:not(:last-child)::before { background: var(--ok); }
+.path-dot {
+  flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; z-index: 1;
+  background: var(--surface-3); border: 2px solid var(--border); font-family: var(--font-display); font-weight: 700;
+}
+.path-step.done .path-dot { background: var(--ok); border-color: var(--ok); color: #fff; }
+.path-step.cur .path-dot { background: var(--primary-soft); border-color: var(--primary); box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent); animation: pulse 2s ease-in-out infinite; }
+.path-body { flex: 1; min-width: 0; padding-top: .45rem; }
+.path-t { font-family: var(--font-display); font-weight: 600; font-size: 1.02rem; }
+.path-step.todo .path-t, .path-step.todo .small { opacity: .7; }
+.path-step.done .path-t { color: var(--muted); }
+.path-step.cur { background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 7%, transparent), transparent); border-radius: 14px; margin: 0 -.6rem; padding-left: .6rem; padding-right: .6rem; }
+.path-info { font-size: .82rem; color: var(--text-2); margin-top: .35rem; display: grid; gap: .3rem; max-width: 320px; }
+.path-extra { margin-top: .7rem; }
+.path-act { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .75rem; }
+.path-act .btn.primary { max-width: 100%; }
+.guided-hero { background: var(--surface); border: 1px solid var(--border); border-top: 5px solid var(--mc); border-radius: var(--radius); padding: clamp(1rem, 2.5vw, 1.5rem); box-shadow: var(--shadow-sm); }
+.gh-ico { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 1.7rem; flex: none; background: color-mix(in srgb, var(--mc) 16%, var(--surface)); }
+.gh-change > summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: .85rem; color: var(--primary); }
+.guided-pill { display: flex; flex-wrap: wrap; gap: .3rem .6rem; align-items: center; padding: .5rem .8rem; margin: .2rem 0 .8rem; border-radius: 12px; background: var(--primary-soft); color: var(--primary); font-family: var(--font-display); font-size: .82rem; font-weight: 500; }
+.guided-pill b { font-weight: 600; margin-left: auto; }
+.guided-pill:hover { text-decoration: none; filter: brightness(.98); }
+@media (max-width: 600px) { .gh-ico { display: none; } .path-step { gap: .7rem; } .path-dot { width: 34px; height: 34px; font-size: .95rem; } .path-step:not(:last-child)::before { left: 16px; top: 38px; } }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);
@@ -538,6 +566,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .grid.c3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(15rem, (100% - 2rem) / 3)), 1fr)); }
 .grid.c4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(12.5rem, (100% - 3rem) / 4)), 1fr)); }
 .grid.k4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(9.5rem, (100% - 3rem) / 4)), 1fr)); }
+.grid.k4s { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(5.5rem, (100% - 3rem) / 4)), 1fr)); }
 .grid.k3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(7rem, (100% - 2rem) / 3)), 1fr)); }
 .grid.auto { grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
 .grid.auto-sm { grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
@@ -1732,7 +1761,8 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     exercises: {},      // { exId: { score, max, at } }
     pretest: {},        // { modId: { score, total, at } }
     counters: {},       // compteurs divers pour les badges
-    notes: {}           // { lessonId: texte }
+    notes: {},          // { lessonId: texte }
+    guided: null        // séance guidée du jour { day, mod, done, ... }
   });
 
   let mem = null; // repli si localStorage indisponible
@@ -2027,6 +2057,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
 
   const BADGES = [
     { id: 'first', e: '🌱', n: 'Premiers pas', d: 'Première bonne réponse' },
+    { id: 'guided', e: '🧭', n: 'Sur les rails', d: 'Terminer une séance guidée' },
     { id: 'goal1', e: '🎯', n: 'Objectif atteint', d: 'Atteindre l\'objectif du jour' },
     { id: 'streak3', e: '🔥', n: 'En feu', d: '3 jours d\'objectif d\'affilée' },
     { id: 'streak7', e: '☄️', n: 'Inarrêtable', d: '7 jours d\'objectif d\'affilée' },
@@ -2509,6 +2540,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   const NAV = [
     { sep: 'Apprendre' },
     { href: '#/', ico: '🏠', label: 'Accueil', match: /^\/$/ },
+    { href: '#/seance', ico: '🧭', label: 'Séance guidée', match: /^\/seance/ },
     { href: '#/plan', ico: '🗓️', label: 'Plan de révision', match: /^\/plan/ },
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes mémoire', match: /^\/cartes/, count: () => App.srs.counts().due },
@@ -2529,7 +2561,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance)/ }
   ];
 
   let back = null;
@@ -9601,7 +9633,8 @@ fi`) },
               <div class="kpi" style="justify-content:center"><div><div class="v">${U.fmtDuration(secs)}</div><div class="l">durée</div></div></div>
             </div>
             <div class="row mt3" style="justify-content:center">
-              ${opts.retry ? '<button class="btn primary" data-retry>🔁 Recommencer</button>' : ''}
+              ${opts.nextHref ? `<a class="btn primary" href="${opts.nextHref}">${opts.nextLabel || 'Continuer ▶'}</a>` : ''}
+              ${opts.retry ? `<button class="btn ${opts.nextHref ? '' : 'primary'}" data-retry>🔁 Recommencer</button>` : ''}
               ${wrong.length ? '<a class="btn soft" href="#/erreurs">🩹 Voir le carnet d\'erreurs</a>' : ''}
               <a class="btn" href="${backHref}">Retour</a>
             </div>
@@ -9726,7 +9759,7 @@ fi`) },
             <p class="sub mt1 mb0">${todayMod ? `Séance du jour : <b>${todayMod.icon} ${todayMod.title}</b>` : 'Choisis un module ou lance un entraînement.'}</p>
             <div class="row mt2 hero-cta">
               ${resume ? `<a class="btn white lg" href="#/cours/${resume.m.id}/${resume.l.idx}" title="${U.esc(resume.l.title)}">▶ Reprendre <span class="hero-cta-sub">${resume.m.icon} ${U.esc(resume.l.title)}</span></a>` : ''}
-              ${todayMod ? `<a class="btn ${resume ? '' : 'white lg'}" href="#/cours/${todayMod.id}">${resume ? '📅 Séance du jour' : '▶ Commencer la séance'}</a>` : (resume ? '' : '<a class="btn white lg" href="#/cours">📚 Ouvrir les cours</a>')}
+              ${todayMod ? `<a class="btn ${resume ? '' : 'white lg'}" href="#/seance">${App.guided.active(todayMod.id) ? '🧭 Continuer la séance guidée' : resume ? '🧭 Séance guidée' : '🧭 Commencer la séance guidée'}</a>` : (resume ? '<a class="btn" href="#/seance">🧭 Séance guidée</a>' : '<a class="btn white lg" href="#/seance">🧭 Séance guidée</a>')}
               <a class="btn" href="#/eclair/mix">⚡ Défi éclair</a>
             </div>
           </div>
@@ -9996,6 +10029,7 @@ fi`) },
           ${nextL ? `<a class="btn primary" href="#/cours/${m.id}/${nextL.idx}">${done ? '▶ Continuer' : '▶ Commencer'} : ${nextL.title}</a>` : ''}
           ${m.pretest.length && !pre ? `<a class="btn accent" href="#/pretest/${m.id}">🧪 Pré-test (${m.pretest.length} questions)</a>` : ''}
           <a class="btn" href="#/quiz/${m.id}">✅ QCM</a>
+          <a class="btn soft" href="#/seance?mod=${m.id}">🧭 Séance guidée</a>
         </div>
         <div class="small muted mt1">${done}/${m.lessons.length} leçons · ${cc.mastered}/${cc.total} cartes maîtrisées${pre ? ` · pré-test : ${pre.score}/${pre.total}` : ''}</div>
       </div>
@@ -10041,6 +10075,7 @@ fi`) },
       <div class="lesson-layout" style="--mc:${m.color}">
       <div class="lesson-main">
         ${App.ui.crumbs([['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['Leçon ' + (i + 1)]])}
+        ${App.guided.active(m.id) ? `<a class="guided-pill" href="#/seance">🧭 Séance guidée en cours · étape Leçons (${doneN}/${m.lessons.length}) <b>↩ revenir au parcours</b></a>` : ''}
         <div class="row between" style="align-items:flex-start">
           <div class="grow"><div class="lesson-kicker" style="color:${m.color}">${m.icon} ${m.label} · leçon ${i + 1}/${m.lessons.length} · ${l.min || 5} min</div><h1 class="mt1">${l.title}</h1></div>
           ${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}
@@ -10053,7 +10088,7 @@ fi`) },
         <div class="lesson-dock">
           ${prev ? `<a class="btn" href="#/cours/${m.id}/${i - 1}" title="${U.esc(prev.title)}">◀<span class="hide-m"> ${U.esc(prev.title)}</span></a>` : `<a class="btn" href="#/cours/${m.id}">◀<span class="hide-m"> Sommaire</span></a>`}
           <button class="btn ${isDone ? 'ghost' : 'ok'}" id="markDone">${isDone ? '✓ Comprise' : '✓ <span class="hide-m">J\'ai compris</span><span class="show-m">Compris</span>'}</button>
-          ${next ? `<a class="btn primary" href="#/cours/${m.id}/${i + 1}" id="nextL" title="${U.esc(next.title)}"><span class="hide-m">${U.esc(next.title)} </span><span class="show-m">Suivante </span>▶</a>` : `<a class="btn primary" href="#/quiz/${m.id}">QCM ▶</a>`}
+          ${next ? `<a class="btn primary" href="#/cours/${m.id}/${i + 1}" id="nextL" title="${U.esc(next.title)}"><span class="hide-m">${U.esc(next.title)} </span><span class="show-m">Suivante </span>▶</a>` : App.guided.active(m.id) ? '<a class="btn primary" href="#/seance">🧭 Suite ▶</a>' : `<a class="btn primary" href="#/quiz/${m.id}">QCM ▶</a>`}
         </div>
       </div>
       ${outline}
@@ -10141,10 +10176,10 @@ fi`) },
         }).join('')}</div>`);
       return;
     }
-    session(query.mod || null);
+    session(query.mod || null, query.g != null && App.guided.active(query.mod));
   });
 
-  function session(modId) {
+  function session(modId, guidedOn) {
     const queue = App.srs.session({ mod: modId });
     const m = modId ? App.content.mod(modId) : null;
     const title = m ? `${m.icon} Cartes — ${m.short || m.title}` : '🃏 Session de cartes';
@@ -10247,7 +10282,8 @@ fi`) },
       host.innerHTML = `<div class="card pad-lg center"><div class="big-emoji" style="font-size:3.4rem">🧠</div><h2 class="mt1">${reviewed} carte(s) révisée(s)</h2>
         <div class="row mt1" style="justify-content:center"><span class="chip ko">À revoir ${tally[0]}</span><span class="chip warn">Difficile ${tally[1]}</span><span class="chip ok">Bien ${tally[2]}</span><span class="chip pri">Facile ${tally[3]}</span></div>
         <p class="muted mt2">+${xp} XP · prochaine échéance ${App.srs.nextDueLabel(modId) || '—'}</p>
-        <div class="row mt2" style="justify-content:center"><a class="btn primary" href="#/cartes">Autre paquet</a><a class="btn" href="#/entrainement">S'entraîner</a></div></div>`;
+        <div class="row mt2" style="justify-content:center">${guidedOn ? '<a class="btn primary" href="#/seance">🧭 Suite de la séance ▶</a><a class="btn" href="#/cartes">Autre paquet</a>' : '<a class="btn primary" href="#/cartes">Autre paquet</a><a class="btn" href="#/entrainement">S\'entraîner</a>'}</div></div>`;
+      if (guidedOn) App.guided.mark('cartes', modId);
       v.querySelector('#cCount').textContent = 'Terminé';
       App.store.save();
     }
@@ -10369,11 +10405,14 @@ fi`) },
     const st = App.store.state.qstats;
     const pool = U.shuffle(m.qcm).sort((a, b) => score(a) - score(b));
     function score(q) { const s = st[q.id]; return !s ? 0 : s.streak >= 2 ? 3 : s.ok / s.seen < 0.6 ? 1 : 2; }
+    const g = query.g != null && App.guided.active(m.id);
     App.runner.start({
       title: `${m.icon} QCM — ${m.short || m.title}`,
       crumbs: [['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['QCM']],
       questions: pool.slice(0, n),
-      backHref: '#/cours/' + m.id + '?tab=pratique',
+      backHref: g ? '#/seance' : '#/cours/' + m.id + '?tab=pratique',
+      onFinish: g ? () => App.guided.mark('qcm', m.id) : null,
+      nextHref: g ? '#/seance' : null, nextLabel: '🧭 Suite de la séance ▶',
       retry: () => R.resolve()
     });
   });
@@ -10401,24 +10440,26 @@ fi`) },
   }
 
   /* ---------- Pré-test ---------- */
-  R.add('/pretest/:mod', (p) => {
+  R.add('/pretest/:mod', (p, query) => {
     const m = App.content.mod(p.mod);
     if (!m || !m.pretest.length) return R.go('/cours');
+    const g = query.g != null && App.guided.active(m.id);
     App.runner.start({
       title: `🧪 Pré-test — ${m.short || m.title}`,
       sub: 'Réponds au mieux AVANT de lire le cours. Se tromper ici est normal et utile.',
       crumbs: [['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['Pré-test']],
       questions: m.pretest,
       noErrorLog: true,
-      backHref: '#/cours/' + m.id,
-      onFinish: (s) => { App.store.state.pretest[m.id] = { score: s.ok, total: s.n, at: Date.now() }; App.store.save(); }
+      backHref: g ? '#/seance' : '#/cours/' + m.id,
+      nextHref: g ? '#/seance' : '#/cours/' + m.id, nextLabel: g ? '🧭 Suite de la séance ▶' : '📖 Lire le cours ▶',
+      onFinish: (s) => { App.store.state.pretest[m.id] = { score: s.ok, total: s.n, at: Date.now() }; if (g) App.guided.mark('pretest', m.id); App.store.save(); }
     });
   });
 
   /* ---------- Carnet d'erreurs ---------- */
   R.add('/erreurs', (p, query) => {
     App.layout.setTitle('Carnet d\'erreurs');
-    if (query.go != null) return replay(query.mod || null);
+    if (query.go != null) return replay(query.mod || null, query.g != null && App.guided.active(query.mod));
     const list = App.progress.errors();
     const byMod = {};
     list.forEach((e) => (byMod[e.mod] = (byMod[e.mod] || 0) + 1));
@@ -10434,7 +10475,7 @@ fi`) },
     if (cb) cb.addEventListener('click', () => App.ui.confirm('<h3>Vider le carnet ?</h3><p>Les erreurs enregistrées seront supprimées.</p>', 'Vider', () => { App.store.state.errors = {}; App.store.save(); R.resolve(); }, true));
   });
 
-  function replay(mod) {
+  function replay(mod, g) {
     const list = App.progress.errors(mod).slice(0, 20).map((e) => {
       const q = JSON.parse(JSON.stringify(e.q));
       delete q._order; delete q._rorder;
@@ -10447,10 +10488,206 @@ fi`) },
       sub: 'Deux bonnes réponses d\'affilée sur une erreur = elle est vaincue.',
       crumbs: [['Carnet d\'erreurs', '#/erreurs'], ['Rejouer']],
       questions: U.shuffle(list),
-      backHref: '#/erreurs',
+      backHref: g ? '#/seance' : '#/erreurs',
+      onFinish: g ? () => App.guided.mark('erreurs', mod) : null,
+      nextHref: g ? '#/seance' : null, nextLabel: '🧭 Suite de la séance ▶',
       retry: () => R.resolve()
     });
   }
+})();
+
+</script>
+  <script>
+/* js/controllers/guided.js */
+/* Contrôleur : parcours guidés.
+   - App.path : composant « parcours » (étapes, progression, bouton « Continuer », passer une étape) ;
+   - /seance : séance guidée du jour (rappel → pré-test → leçons → cartes → QCM → exercice → erreurs → bilan),
+     qui reproduit le rythme d'une séance de 2 h du plan, sans avoir à choisir quoi faire. */
+(function () {
+  'use strict';
+  const App = window.App;
+  const U = App.util;
+  const R = App.router;
+
+  /* ---------- Composant parcours ---------- */
+  const path = (App.path = {
+    /* steps : [{ key, ico, title, desc, min, href?, inline?, done: bool, info?, optional? }] */
+    html(steps, opts) {
+      const cur = steps.findIndex((s) => !s.done);
+      return `<ol class="path">${steps.map((s, i) => {
+        const state = s.done ? 'done' : i === cur ? 'cur' : 'todo';
+        const act = state === 'cur' ? `<div class="path-act">
+            ${s.href ? `<a class="btn primary" href="${s.href}">▶ ${s.cta || 'Commencer'}</a>` : ''}
+            ${s.inline ? `<button class="btn primary" data-inline="${s.key}">${s.cta || 'C\'est fait'}</button>` : ''}
+            <button class="btn ghost sm" data-skip="${s.key}">Passer cette étape</button></div>` : '';
+        return `<li class="path-step ${state}" data-step="${s.key}">
+          <span class="path-dot">${s.done ? '✓' : s.ico}</span>
+          <div class="path-body">
+            <div class="row between nowrap"><b class="path-t">${s.title}</b>${s.min ? `<span class="chip">${s.min} min</span>` : ''}</div>
+            <div class="small muted">${s.desc}</div>
+            ${s.info ? `<div class="path-info">${s.info}</div>` : ''}
+            ${state === 'cur' && s.body ? `<div class="path-extra">${s.body}</div>` : ''}
+            ${act}
+            ${s.done && s.href && opts && opts.redo !== false ? `<a class="tiny" href="${s.href}">refaire</a>` : ''}
+          </div>
+        </li>`;
+      }).join('')}</ol>`;
+    },
+    bind(root, handlers) {
+      U.$$('[data-skip]', root).forEach((b) => b.addEventListener('click', () => handlers.skip(b.dataset.skip)));
+      U.$$('[data-inline]', root).forEach((b) => b.addEventListener('click', () => handlers.inline(b.dataset.inline)));
+    }
+  });
+
+  /* ---------- État de la séance guidée ---------- */
+  const guided = (App.guided = {
+    state() {
+      const g = App.store.state.guided;
+      return g && g.day === U.dayKey() ? g : null;
+    },
+    active(modId) {
+      const g = guided.state();
+      return !!g && (!modId || g.mod === modId) && !g.finished;
+    },
+    start(modId) {
+      const st = App.store.state;
+      const t = App.store.today();
+      st.guided = { day: U.dayKey(), mod: modId, done: {}, xp0: t.xp, a0: t.answered, c0: t.correct, l0: Object.keys(st.lessons).length, k0: t.cards || 0, t0: Date.now(), finished: false };
+      App.store.save();
+      return st.guided;
+    },
+    mark(key, modId) {
+      const g = guided.state();
+      if (!g || (modId && g.mod !== modId)) return;
+      g.done[key] = g.done[key] || 'ok';
+      App.store.save();
+    },
+    /* Lien de retour vers le parcours (pour les écrans appelés depuis la séance) */
+    backLink() { return '#/seance'; }
+  });
+
+  function chooseModule(query) {
+    const today = U.dayKey();
+    if (query.mod && App.content.mod(query.mod)) return App.content.mod(query.mod);
+    const g = guided.state();
+    if (g && App.content.mod(g.mod)) return App.content.mod(g.mod);
+    return App.content.moduleForDay(today) || App.progress.weakest() || App.content.modules[0];
+  }
+
+  function stepsFor(m, g) {
+    const st = App.store.state;
+    const idx = App.content.modules.indexOf(m);
+    const prev = App.content.modules.slice(0, idx).reverse().find((x) => x.phrases && x.phrases.length);
+    const lessonsDone = m.lessons.filter((l) => App.progress.lessonDone(l.id)).length;
+    const nextL = m.lessons.find((l) => !App.progress.lessonDone(l.id));
+    const errs = App.progress.errors(m.id).length;
+    const exToday = m.exercises.find((e) => { const s = App.progress.exerciseScore(e.id); return s && U.dayKey(new Date(s.at)) === g.day; });
+    const nextEx = m.exercises.find((e) => !App.progress.exerciseScore(e.id)) || m.exercises[0];
+    const d = g.done;
+    const steps = [];
+    if (prev) steps.push({
+      key: 'rappel', ico: '🗣️', title: 'Rappel actif', min: 5,
+      desc: `Récite de mémoire les 5 phrases clés de « ${U.esc(prev.short || prev.title)} », puis vérifie.`,
+      inline: true, cta: '✓ Rappel fait',
+      body: `<div class="stack-sm">${prev.phrases.map((ph, i) => `<div class="co ex reveal"><div class="co-h">Phrase ${i + 1}</div><div class="small muted">« ${ph.replace(/<[^>]+>/g, '').split(/\s+/).slice(0, 4).join(' ')} … »</div><div class="mt1"><button class="btn sm soft reveal-btn">Voir la réponse</button></div><div class="reveal-body mt1"><b>${ph}</b></div></div>`).join('')}</div>`,
+      done: !!d.rappel
+    });
+    if (m.pretest.length) steps.push({
+      key: 'pretest', ico: '🧪', title: 'Pré-test', min: 3,
+      desc: 'Réponds avant de lire : se tromper ici prépare le cerveau à retenir. Ça ne compte pas.',
+      href: `#/pretest/${m.id}?g=1`, done: !!d.pretest || !!st.pretest[m.id],
+      info: st.pretest[m.id] ? `Score : ${st.pretest[m.id].score}/${st.pretest[m.id].total}` : ''
+    });
+    steps.push({
+      key: 'lecons', ico: '📖', title: 'Leçons', min: Math.min(35, U.sum(m.lessons.filter((l) => !App.progress.lessonDone(l.id)).map((l) => l.min || 5)) || 5),
+      desc: 'Lis chaque leçon, réponds aux questions de vérification, puis « J\'ai compris ».',
+      href: nextL ? `#/cours/${m.id}/${nextL.idx}` : `#/cours/${m.id}`, cta: nextL ? `Leçon ${nextL.idx + 1} : ${U.esc(nextL.title)}` : 'Revoir le cours',
+      info: `${lessonsDone}/${m.lessons.length} leçons comprises ${App.ui.bar(lessonsDone / m.lessons.length, 'ok thin')}`,
+      done: !!d.lecons || lessonsDone === m.lessons.length
+    });
+    if (m.cards.length) steps.push({
+      key: 'cartes', ico: '🃏', title: 'Cartes mémoire', min: 8,
+      desc: 'Réponds à voix haute avant de retourner la carte, puis note-toi honnêtement.',
+      href: `#/cartes?go=1&mod=${m.id}&g=1`, done: !!d.cartes
+    });
+    if (m.qcm.length) steps.push({
+      key: 'qcm', ico: '✅', title: 'QCM de la séance', min: 10,
+      desc: `${Math.min(12, m.qcm.length)} questions, en priorité celles jamais vues ou ratées.`,
+      href: `#/quiz/${m.id}?n=12&g=1`, done: !!d.qcm
+    });
+    if (m.exercises.length) steps.push({
+      key: 'exo', ico: '✍️', title: 'Exercice type concours', min: nextEx.min || 10, optional: true,
+      desc: `Chronométré, sur papier, puis corrige-toi avec le barème : « ${U.esc(nextEx.title)} ».`,
+      href: `#/exo/${nextEx.id}`, done: !!d.exo || !!exToday
+    });
+    steps.push({
+      key: 'erreurs', ico: '🩹', title: 'Carnet d\'erreurs', min: 5,
+      desc: errs ? `${errs} erreur(s) de cette séance à retravailler : 2 bonnes réponses d'affilée et elles disparaissent.` : 'Aucune erreur en attente pour cette séance 👌',
+      href: errs ? `#/erreurs?go=1&mod=${m.id}&g=1` : null, inline: !errs, cta: errs ? 'Rejouer mes erreurs' : '✓ Continuer',
+      done: !!d.erreurs
+    });
+    return steps;
+  }
+
+  R.add('/seance', (p, query) => {
+    const m = chooseModule(query);
+    let g = guided.state();
+    if (!g || g.mod !== m.id) g = guided.start(m.id);
+    App.layout.setTitle('Séance guidée');
+    const steps = stepsFor(m, g);
+    const doneN = steps.filter((s) => s.done).length;
+    const allDone = doneN === steps.length;
+    const leftMin = U.sum(steps.filter((s) => !s.done).map((s) => s.min || 0));
+    const t = App.store.today();
+    const nm = App.backup.name();
+    const others = App.content.modules.filter((x) => x.lessons.length);
+
+    if (allDone && !g.finished) {
+      g.finished = true;
+      App.game.award('guided');
+      App.game.addXP(50, false);
+      App.store.save();
+      setTimeout(() => { App.fx.sound('level'); App.fx.confetti(1.2); }, 200);
+    }
+    const ans = t.answered - (g.a0 || 0), cor = t.correct - (g.c0 || 0);
+    const bilan = allDone ? `
+      <div class="card pad-lg center mt2 guided-end">
+        <div class="big-emoji">🏁</div>
+        <h2 class="mt1">Séance terminée${nm ? ', bravo ' + nm : ''}&nbsp;!</h2>
+        <div class="grid k4s mt2" style="max-width:640px;margin:1rem auto 0">
+          <div class="kpi" style="justify-content:center"><div><div class="v pri-t">+${Math.max(0, t.xp - (g.xp0 || 0))}</div><div class="l">XP</div></div></div>
+          <div class="kpi" style="justify-content:center"><div><div class="v">${Math.max(0, Object.keys(App.store.state.lessons).length - (g.l0 || 0))}</div><div class="l">leçons</div></div></div>
+          <div class="kpi" style="justify-content:center"><div><div class="v">${ans > 0 ? Math.round((cor / ans) * 100) + ' %' : '—'}</div><div class="l">réussite</div></div></div>
+          <div class="kpi" style="justify-content:center"><div><div class="v">${U.fmtDuration((Date.now() - g.t0) / 1000).replace(/:\d\d$/, ' min').replace(/^(\d+):(\d+) min$/, '$1 h $2')}</div><div class="l">durée</div></div></div>
+        </div>
+        <p class="muted mt2">Ce soir ou demain matin : relis les « 5 phrases » de cette séance en 5 minutes. C'est le rappel le plus rentable.</p>
+        <div class="row mt2" style="justify-content:center"><a class="btn primary" href="#/cours/${m.id}?tab=phrases">🗣️ Les 5 phrases</a><a class="btn" href="#/preparation">📈 Mon indice de préparation</a><a class="btn" href="#/">Accueil</a></div>
+      </div>` : '';
+
+    const v = App.ui.mount(`
+      <div class="guided-hero" style="--mc:${m.color}">
+        <div class="row nowrap" style="align-items:flex-start">
+          <span class="m-ico gh-ico">${m.icon}</span>
+          <div class="grow">
+            <div class="lesson-kicker" style="color:${m.color}">🧭 Séance guidée · ${m.label}${m.day ? ' · ' + U.fmtDay(m.day) : ''}</div>
+            <h1 class="mb0 mt1">${m.title}</h1>
+            <div class="muted small mt1">${allDone ? 'Toutes les étapes sont faites.' : `${doneN}/${steps.length} étapes · environ ${leftMin} min restantes`} · suit le rythme d'une séance du plan.</div>
+          </div>
+          ${App.ui.ring(doneN / steps.length, 64, 7, m.color, `${doneN}/${steps.length}`)}
+        </div>
+        <details class="gh-change mt2"><summary>Changer de séance</summary><div class="row mt1">${others.map((x) => `<a class="btn sm ${x.id === m.id ? 'soft' : ''}" href="#/seance?mod=${x.id}">${x.icon} ${x.short || x.title}</a>`).join('')}</div></details>
+      </div>
+      ${bilan}
+      <div class="card mt2">${path.html(steps)}</div>
+      ${App.md.tip('Tu peux quitter à tout moment : la séance reprend où tu t\'es arrêté (aujourd\'hui). Chaque étape terminée est cochée automatiquement.', 'Comment ça marche ?')}`, { narrow: true });
+    App.ui.hydrate(v);
+    path.bind(v, {
+      skip: (k) => { g.done[k] = 'skip'; App.store.save(); R.resolve(); },
+      inline: (k) => { g.done[k] = 'ok'; App.store.save(); App.game.addXP(5, false); R.resolve(); }
+    });
+    const cur = v.querySelector('.path-step.cur');
+    if (cur && doneN > 0) setTimeout(() => cur.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+  });
 })();
 
 </script>
@@ -10540,10 +10777,11 @@ fi`) },
       const all = Object.keys(grades).length === e.parts.length;
       v.querySelector('#total').innerHTML = `<div class="small muted">Total ${all ? '' : '(provisoire)'}</div><div class="bignum ${sc / e.points >= 0.7 ? 'ok-t' : sc / e.points >= 0.4 ? 'warn-t' : 'ko-t'}">${U.fmtNum(sc)} / ${e.points}</div>
         ${prev ? `<div class="small muted">Meilleur score précédent : ${U.fmtNum(prev.best || prev.score)} / ${prev.max}</div>` : ''}
-        <div class="row mt2" style="justify-content:center"><button class="btn primary" id="save" ${all ? '' : 'disabled'}>💾 Enregistrer mon score</button><a class="btn" href="#/cours/${m.id}?tab=pratique">Retour</a></div>`;
+        <div class="row mt2" style="justify-content:center"><button class="btn primary" id="save" ${all ? '' : 'disabled'}>💾 Enregistrer mon score</button>${App.guided.active(m.id) ? '<a class="btn" href="#/seance">🧭 Suite de la séance ▶</a>' : `<a class="btn" href="#/cours/${m.id}?tab=pratique">Retour</a>`}</div>`;
       const sb = v.querySelector('#save');
       sb.addEventListener('click', () => {
         App.progress.saveExercise(e.id, sc, e.points);
+        App.guided.mark('exo', m.id);
         App.game.addXP(Math.round(sc * 5) + 10, sb);
         App.ui.toast('✍️', `<b>Score enregistré : ${U.fmtNum(sc)}/${e.points}</b>`);
         if (sc / e.points >= 0.8) App.fx.confetti(0.6);

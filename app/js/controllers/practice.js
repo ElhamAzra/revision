@@ -102,11 +102,14 @@
     const st = App.store.state.qstats;
     const pool = U.shuffle(m.qcm).sort((a, b) => score(a) - score(b));
     function score(q) { const s = st[q.id]; return !s ? 0 : s.streak >= 2 ? 3 : s.ok / s.seen < 0.6 ? 1 : 2; }
+    const g = query.g != null && App.guided.active(m.id);
     App.runner.start({
       title: `${m.icon} QCM — ${m.short || m.title}`,
       crumbs: [['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['QCM']],
       questions: pool.slice(0, n),
-      backHref: '#/cours/' + m.id + '?tab=pratique',
+      backHref: g ? '#/seance' : '#/cours/' + m.id + '?tab=pratique',
+      onFinish: g ? () => App.guided.mark('qcm', m.id) : null,
+      nextHref: g ? '#/seance' : null, nextLabel: '🧭 Suite de la séance ▶',
       retry: () => R.resolve()
     });
   });
@@ -134,24 +137,26 @@
   }
 
   /* ---------- Pré-test ---------- */
-  R.add('/pretest/:mod', (p) => {
+  R.add('/pretest/:mod', (p, query) => {
     const m = App.content.mod(p.mod);
     if (!m || !m.pretest.length) return R.go('/cours');
+    const g = query.g != null && App.guided.active(m.id);
     App.runner.start({
       title: `🧪 Pré-test — ${m.short || m.title}`,
       sub: 'Réponds au mieux AVANT de lire le cours. Se tromper ici est normal et utile.',
       crumbs: [['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['Pré-test']],
       questions: m.pretest,
       noErrorLog: true,
-      backHref: '#/cours/' + m.id,
-      onFinish: (s) => { App.store.state.pretest[m.id] = { score: s.ok, total: s.n, at: Date.now() }; App.store.save(); }
+      backHref: g ? '#/seance' : '#/cours/' + m.id,
+      nextHref: g ? '#/seance' : '#/cours/' + m.id, nextLabel: g ? '🧭 Suite de la séance ▶' : '📖 Lire le cours ▶',
+      onFinish: (s) => { App.store.state.pretest[m.id] = { score: s.ok, total: s.n, at: Date.now() }; if (g) App.guided.mark('pretest', m.id); App.store.save(); }
     });
   });
 
   /* ---------- Carnet d'erreurs ---------- */
   R.add('/erreurs', (p, query) => {
     App.layout.setTitle('Carnet d\'erreurs');
-    if (query.go != null) return replay(query.mod || null);
+    if (query.go != null) return replay(query.mod || null, query.g != null && App.guided.active(query.mod));
     const list = App.progress.errors();
     const byMod = {};
     list.forEach((e) => (byMod[e.mod] = (byMod[e.mod] || 0) + 1));
@@ -167,7 +172,7 @@
     if (cb) cb.addEventListener('click', () => App.ui.confirm('<h3>Vider le carnet ?</h3><p>Les erreurs enregistrées seront supprimées.</p>', 'Vider', () => { App.store.state.errors = {}; App.store.save(); R.resolve(); }, true));
   });
 
-  function replay(mod) {
+  function replay(mod, g) {
     const list = App.progress.errors(mod).slice(0, 20).map((e) => {
       const q = JSON.parse(JSON.stringify(e.q));
       delete q._order; delete q._rorder;
@@ -180,7 +185,9 @@
       sub: 'Deux bonnes réponses d\'affilée sur une erreur = elle est vaincue.',
       crumbs: [['Carnet d\'erreurs', '#/erreurs'], ['Rejouer']],
       questions: U.shuffle(list),
-      backHref: '#/erreurs',
+      backHref: g ? '#/seance' : '#/erreurs',
+      onFinish: g ? () => App.guided.mark('erreurs', mod) : null,
+      nextHref: g ? '#/seance' : null, nextLabel: '🧭 Suite de la séance ▶',
       retry: () => R.resolve()
     });
   }

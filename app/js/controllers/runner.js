@@ -149,7 +149,8 @@
               <div class="kpi" style="justify-content:center"><div><div class="v">${U.fmtDuration(secs)}</div><div class="l">durée</div></div></div>
             </div>
             <div class="row mt3" style="justify-content:center">
-              ${opts.retry ? '<button class="btn primary" data-retry>🔁 Recommencer</button>' : ''}
+              ${opts.nextHref ? `<a class="btn primary" href="${opts.nextHref}">${opts.nextLabel || 'Continuer ▶'}</a>` : ''}
+              ${opts.retry ? `<button class="btn ${opts.nextHref ? '' : 'primary'}" data-retry>🔁 Recommencer</button>` : ''}
               ${wrong.length ? '<a class="btn soft" href="#/erreurs">🩹 Voir le carnet d\'erreurs</a>' : ''}
               <a class="btn" href="${backHref}">Retour</a>
             </div>

@@ -14,6 +14,7 @@
 
   const BADGES = [
     { id: 'first', e: '🌱', n: 'Premiers pas', d: 'Première bonne réponse' },
+    { id: 'guided', e: '🧭', n: 'Sur les rails', d: 'Terminer une séance guidée' },
     { id: 'goal1', e: '🎯', n: 'Objectif atteint', d: 'Atteindre l\'objectif du jour' },
     { id: 'streak3', e: '🔥', n: 'En feu', d: '3 jours d\'objectif d\'affilée' },
     { id: 'streak7', e: '☄️', n: 'Inarrêtable', d: '7 jours d\'objectif d\'affilée' },
