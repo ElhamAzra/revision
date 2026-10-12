@@ -27,7 +27,7 @@
         <div class="grid auto">${mods.map((m) => {
           const c = App.srs.counts(m.id);
           return `<a class="card hover" style="color:inherit;text-decoration:none;border-left:5px solid ${m.color}" href="#/cartes?go=1&mod=${m.id}"><div class="row nowrap"><span style="font-size:1.5rem">${m.icon}</span><div class="grow"><b>${m.short || m.title}</b><div class="small muted">${c.total} cartes · ${c.due} à revoir · ${c.fresh} nouvelles</div>${App.ui.bar(c.total ? c.mastered / c.total : 0, 'ok')}</div></div></a>`;
-        }).join('')}</div>`);
+        }).join('')}</div>`, { help: 'cartes' });
       return;
     }
     session(query.mod || null, query.g != null && App.guided.active(query.mod));
@@ -50,7 +50,7 @@
         <span class="fh-count" id="cCount"></span>
         <button class="btn sm ghost" id="cEnd">Terminer</button>
       </div>
-      <div id="cHost" class="focus-body"></div>`, { focus: true });
+      <div id="cHost" class="focus-body"></div>`, { focus: true, help: 'cartes' });
     App.layout.setBack('#/cartes');
     const host = v.querySelector('#cHost');
     const bar = v.querySelector('.fh-bar > i');

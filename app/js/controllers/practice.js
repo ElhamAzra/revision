@@ -37,7 +37,7 @@
       ${mods.map((m) => {
         const gs = App.gen.forModule(m.id);
         return gs.length ? `<h3 class="mt2" style="color:${m.color}">${m.icon} ${m.short || m.title}</h3><div class="grid auto">${gs.map(App.course.genCard).join('')}</div>` : '';
-      }).join('')}`);
+      }).join('')}`, { help: 'entrainement' });
   });
 
   /* ---------- Générateur infini ---------- */
@@ -51,6 +51,7 @@
       sub: `${g.desc} <div class="seg mt1" id="lvlSeg">${g.levels.map((l, i) => `<button data-l="${i + 1}" class="${lvl === i + 1 ? 'on' : ''}">${'★'.repeat(i + 1)} ${l}</button>`).join('')}</div>`,
       crumbs: [['Entraînement', '#/entrainement'], [m ? m.short || m.title : 'Générateur', m ? '#/cours/' + m.id + '?tab=pratique' : null], [g.title]],
       next: () => App.gen.make(g.id, lvl),
+      help: 'gen',
       count: Infinity,
       backHref: m ? '#/cours/' + m.id + '?tab=pratique' : '#/entrainement',
       retry: () => R.resolve()
@@ -71,7 +72,7 @@
         <p class="muted">60 secondes. Un maximum de bonnes réponses. Pas de pause.<br>Ton record : <b class="acc-t" style="font-size:1.2rem">${best}</b></p>
         <button class="btn accent lg" id="go">⚡ Partez ! <span class="k">Entrée</span></button>
         <p class="small muted mt2">Astuce : sur PC, valide avec <kbd>Entrée</kbd> sans lâcher le clavier.</p>
-      </div>`);
+      </div>`, { help: 'eclair' });
     let offKeys = null;
     const go = () => {
       if (offKeys) offKeys();
@@ -80,7 +81,7 @@
       App.runner.start({
         title: `${b.icon} ${b.title}`,
         crumbs: [['Entraînement', '#/entrainement'], ['Défi éclair']],
-        mode: 'blitz', time: 60, recordKey: 'blitz-' + b.id,
+        mode: 'blitz', time: 60, recordKey: 'blitz-' + b.id, help: 'eclair',
         next: App.gen.mixer(b.ids, b.level, b.quick),
         count: Infinity,
         noErrorLog: false,
@@ -167,7 +168,7 @@
         ${Object.entries(byMod).map(([mid, n]) => { const m = App.content.mod(mid); return m ? `<a class="btn sm" href="#/erreurs?go=1&mod=${mid}">${m.icon} ${m.short} (${n})</a>` : ''; }).join('')}</div>
         <div class="stack mt2">${list.map((e) => { const m = App.content.mod(e.mod); return `<div class="card"><div class="row between"><span class="chip" style="color:${m ? m.color : ''}">${m ? m.icon + ' ' + m.short : ''}</span><span class="tiny muted">ratée ${e.wrong}× · ${U.ago(e.at)}${e.ok ? ' · 1 réussite' : ''}</span></div><div class="mt1">${e.q.q}</div></div>`; }).join('')}</div>
         <div class="mt2"><button class="btn sm ghost" id="clearErr">Vider le carnet</button></div>`
-        : `<div class="card empty"><div class="big">✨</div><h2>Carnet vide</h2><p>Aucune erreur en attente. Lance un QCM ou un défi : tes erreurs apparaîtront ici pour être retravaillées.</p><a class="btn primary" href="#/quiz/mix">🎲 Mélange intelligent</a></div>`}`);
+        : `<div class="card empty"><div class="big">✨</div><h2>Carnet vide</h2><p>Aucune erreur en attente. Lance un QCM ou un défi : tes erreurs apparaîtront ici pour être retravaillées.</p><a class="btn primary" href="#/quiz/mix">🎲 Mélange intelligent</a></div>`}`, { help: 'erreurs' });
     const cb = document.getElementById('clearErr');
     if (cb) cb.addEventListener('click', () => App.ui.confirm('<h3>Vider le carnet ?</h3><p>Les erreurs enregistrées seront supprimées.</p>', 'Vider', () => { App.store.state.errors = {}; App.store.save(); R.resolve(); }, true));
   });

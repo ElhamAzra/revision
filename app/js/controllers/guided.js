@@ -178,7 +178,7 @@
       </div>
       ${bilan}
       <div class="card mt2">${path.html(steps)}</div>
-      ${App.md.tip('Tu peux quitter à tout moment : la séance reprend où tu t\'es arrêté (aujourd\'hui). Chaque étape terminée est cochée automatiquement.', 'Comment ça marche ?')}`, { narrow: true });
+      ${App.md.tip('Tu peux quitter à tout moment : la séance reprend où tu t\'es arrêté (aujourd\'hui). Chaque étape terminée est cochée automatiquement.', 'Comment ça marche ?')}`, { narrow: true, help: 'seance' });
     App.ui.hydrate(v);
     path.bind(v, {
       skip: (k) => { g.done[k] = 'skip'; App.store.save(); R.resolve(); },

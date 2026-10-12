@@ -16,6 +16,7 @@
       ui.setFocus(!!opts.focus);
       v.innerHTML = html;
       ui.hydrate(v);
+      if (opts.help && App.help) App.help.decorate(v, opts.help);
       if (App.layout.applyBack) App.layout.applyBack();
       return v;
     },
@@ -100,11 +101,15 @@
     modal(html, opts) {
       opts = opts || {};
       const bg = U.el(`<div class="modal-bg"><div class="modal ${opts.wide ? 'wide' : ''}" role="dialog" aria-modal="true">${html}</div></div>`);
+      let closed = false;
       const close = () => {
+        if (closed) return;
+        closed = true;
         bg.remove();
         document.removeEventListener('keydown', onKey);
         if (opts.onClose) opts.onClose();
       };
+      if (!opts.keepOnRoute) App.router.onLeave(close); // une fenêtre ne survit pas à un changement de page
       const onKey = (e) => { if (e.key === 'Escape') close(); };
       bg.addEventListener('click', (e) => {
         if (e.target === bg && !opts.locked) close();

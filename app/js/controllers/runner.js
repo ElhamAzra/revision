@@ -28,7 +28,7 @@
           ${mode !== 'blitz' ? '<button class="btn sm ghost" id="qEnd" title="Terminer et voir le bilan">Terminer</button>' : ''}
         </div>
         ${opts.sub ? `<div class="focus-sub">${opts.sub}</div>` : ''}
-        <div id="qHost" class="focus-body"></div>`, { focus: true });
+        <div id="qHost" class="focus-body"></div>`, { focus: true, help: opts.help || 'quiz' });
       App.layout.setBack(backHref);
       const host = v.querySelector('#qHost');
       const bar = v.querySelector('.fh-bar > i');

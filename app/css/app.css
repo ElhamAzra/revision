@@ -522,6 +522,44 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .guided-pill:hover { text-decoration: none; filter: brightness(.98); }
 @media (max-width: 600px) { .gh-ico { display: none; } .path-step { gap: .7rem; } .path-dot { width: 34px; height: 34px; font-size: .95rem; } .path-step:not(:last-child)::before { left: 16px; top: 38px; } }
 
+/* Aide : bouton « ? », bulle de première visite, visite guidée, mode d'emploi */
+.help-btn {
+  display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; vertical-align: .2em; margin-left: .3rem;
+  border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--primary); cursor: pointer;
+  font-family: var(--font-display); font-weight: 700; font-size: .85rem; line-height: 1; letter-spacing: 0;
+}
+.help-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.help-btn.in-focus { width: 40px; height: 40px; border-radius: 12px; margin: 0; flex: none; font-size: 1rem; vertical-align: 0; }
+@media (max-width: 880px) { .help-btn.in-focus { width: 36px; height: 36px; } }
+.coach {
+  display: flex; gap: .8rem; align-items: flex-start; flex-wrap: wrap; margin: 0 0 1rem; padding: .85rem 1rem; border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--primary-soft), var(--accent-soft)); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  animation: slideUp .3s ease;
+}
+.coach-ico { font-size: 1.5rem; }
+.coach .grow { min-width: 14rem; }
+.coach b { font-family: var(--font-display); font-weight: 600; }
+.coach .prose ul, .coach .prose ol { margin-bottom: .2rem; }
+.tour { position: fixed; inset: 0; z-index: 150; }
+.tour-spot {
+  position: fixed; border-radius: 16px; box-shadow: 0 0 0 9999px rgba(8, 10, 28, .66), 0 0 0 3px var(--primary);
+  transition: left .3s ease, top .3s ease, width .3s ease, height .3s ease; pointer-events: none;
+}
+.tour-bubble {
+  position: fixed; background: var(--surface); color: var(--text); border-radius: 18px; padding: 1rem 1.1rem; box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border); transition: left .3s ease, top .3s ease; animation: popIn .3s ease;
+}
+.tour-bubble h3 { margin: .1rem 0 .35rem; }
+.tour-bubble p { font-size: .93rem; margin-bottom: .8rem; }
+.tour-n { font-family: var(--font-display); font-size: .72rem; font-weight: 600; color: var(--primary); letter-spacing: .06em; }
+.aide-toc { display: flex; flex-wrap: wrap; gap: .4rem .5rem; }
+.aide-toc a { font-family: var(--font-display); font-weight: 500; font-size: .86rem; padding: .3rem .7rem; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+.aide-toc a:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
+.aide-sec { scroll-margin-top: 4.5rem; }
+.aide-tool { border: 1px solid var(--border); border-radius: 13px; padding: .65rem .9rem; margin: .5rem 0; background: var(--surface-2); }
+.aide-tool > summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; }
+.aide-tool[open] > summary { margin-bottom: .4rem; }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);

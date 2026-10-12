@@ -10,7 +10,7 @@
     const today = U.dayKey();
     App.ui.mount(`
       <div class="page-head"><h1>📚 Cours</h1><div class="sub">${App.content.lessonCount()} leçons, construites à partir du plan de révision et des supports de cours de l'ESTN. Chaque leçon commence par <b>l'essentiel en 30 secondes</b>.</div></div>
-      <div class="mod-grid">${App.content.modules.map((m) => App.home.modCard(m, today)).join('')}</div>`);
+      <div class="mod-grid">${App.content.modules.map((m) => App.home.modCard(m, today)).join('')}</div>`, { help: 'cours' });
   });
 
   R.add('/cours/:mod', (p, query) => {
@@ -69,7 +69,7 @@
       </div>
       ${m.pretest.length && !pre ? App.md.tip('Le <b>pré-test</b> se fait <b>avant</b> de lire le cours : essayer de répondre (même en se trompant) prépare le cerveau à retenir la bonne réponse. C\'est prouvé, et ça ne compte pas dans ta note.', 'Pourquoi un pré-test ?') : ''}
       <div class="tabs mt2">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>
-      ${body}`);
+      ${body}`, { help: 'cours' });
     U.$$('.tabs button').forEach((b) => b.addEventListener('click', () => R.go(`/cours/${m.id}?tab=${b.dataset.tab}`)));
   }, { keepScroll: false });
 
@@ -126,7 +126,7 @@
         </div>
       </div>
       ${outline}
-      </div>`, { wide: true });
+      </div>`, { wide: true, help: 'lecon' });
     const rp = v.querySelector('.read-progress > i');
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;

@@ -49,7 +49,7 @@
       </div>
       ${App.content.extras.reflexes ? `<div class="card mt2"><h3>🧭 Le jour J : les réflexes</h3><ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></div>` : ''}
       <h2 class="mt3">📈 Historique</h2>
-      ${hist.length ? App.md.table(['Date', 'Type', 'E1', 'E2', 'Moyenne'], hist.map((h) => [new Date(h.at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }), h.kind, `<span class="${h.e1 <= 5 ? 'ko-t' : ''}">${U.fmtNum(h.e1, 1)}</span>`, `<span class="${h.e2 <= 5 ? 'ko-t' : ''}">${U.fmtNum(h.e2, 1)}</span>`, `<b>${U.fmtNum(h.avg, 2)}</b>`])) : '<p class="muted">Aucun examen passé pour l\'instant.</p>'}`);
+      ${hist.length ? App.md.table(['Date', 'Type', 'E1', 'E2', 'Moyenne'], hist.map((h) => [new Date(h.at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }), h.kind, `<span class="${h.e1 <= 5 ? 'ko-t' : ''}">${U.fmtNum(h.e1, 1)}</span>`, `<span class="${h.e2 <= 5 ? 'ko-t' : ''}">${U.fmtNum(h.e2, 1)}</span>`, `<b>${U.fmtNum(h.avg, 2)}</b>`])) : '<p class="muted">Aucun examen passé pour l\'instant.</p>'}`, { help: 'examen' });
   });
 
   /* ---------- Examen express ---------- */
@@ -80,7 +80,7 @@
       </div>
       <details class="card exam-pal" open><summary><span>Questions</span><span class="small muted" id="palInfo"></span></summary><div class="row mt1" id="pal" style="gap:.35rem"></div></details>
       <div id="qh" class="mt2"></div>
-      <div class="exam-nav"><button class="btn" id="pv">◀ Précédente</button><span class="grow"></span><button class="btn primary" id="nx">Suivante ▶</button></div>`, { focus: true });
+      <div class="exam-nav"><button class="btn" id="pv">◀ Précédente</button><span class="grow"></span><button class="btn primary" id="nx">Suivante ▶</button></div>`, { focus: true, help: 'examen' });
     App.layout.setBack('#/examen');
     v.querySelector('[data-quit]').addEventListener('click', (e) => {
       if (finished) return;
@@ -179,7 +179,7 @@
       <div class="card" style="position:sticky;top:.5rem;z-index:5"><div class="row between"><span class="timer" id="tm">${U.fmtDuration(left)}</span><span class="small muted" id="phaseLbl">Phase 1 : rédaction (corrigés masqués)</span><button class="btn sm primary" id="go">▶ Démarrer le chrono</button><button class="btn sm accent" id="end">Terminer → corriger</button></div></div>
       <div class="card mt2 prose">${ex.context}</div>
       <div id="secs" class="exam-locked"></div>
-      <div id="result" class="mt2"></div>`);
+      <div id="result" class="mt2"></div>`, { help: 'examen' });
     const secs = v.querySelector('#secs');
     let gi = 0;
     ex.sections.forEach((s) => {

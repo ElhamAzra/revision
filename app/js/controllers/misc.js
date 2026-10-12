@@ -29,7 +29,7 @@
     const groups = {};
     LABS.forEach((l) => (groups[l.mod] = groups[l.mod] || []).push(l));
     App.ui.mount(`<div class="page-head"><h1>🧪 Labs interactifs</h1><div class="sub">Manipule pour comprendre : chaque outil montre le calcul, pas seulement le résultat.</div></div>
-      ${Object.entries(groups).map(([mid, ls]) => { const m = App.content.mod(mid); return `<h3 class="mt2" style="color:${m ? m.color : ''}">${m ? m.icon + ' ' + (m.short || m.title) : ''}</h3><div class="grid auto">${ls.map((l) => `<a class="card hover" href="#/lab/${l.id}" style="color:inherit;text-decoration:none"><div class="row nowrap"><span style="font-size:1.7rem">${l.icon}</span><div class="grow"><b>${l.title}</b><div class="small muted">${l.desc}</div></div></div></a>`).join('')}</div>`; }).join('')}`);
+      ${Object.entries(groups).map(([mid, ls]) => { const m = App.content.mod(mid); return `<h3 class="mt2" style="color:${m ? m.color : ''}">${m ? m.icon + ' ' + (m.short || m.title) : ''}</h3><div class="grid auto">${ls.map((l) => `<a class="card hover" href="#/lab/${l.id}" style="color:inherit;text-decoration:none"><div class="row nowrap"><span style="font-size:1.7rem">${l.icon}</span><div class="grow"><b>${l.title}</b><div class="small muted">${l.desc}</div></div></div></a>`).join('')}</div>`; }).join('')}`, { help: 'labs' });
   });
 
   R.add('/lab/:id', (p) => {
@@ -37,7 +37,7 @@
     if (!l) return R.go('/labs');
     App.layout.setTitle(l.title);
     App.ui.mount(`${App.ui.crumbs([['Labs', '#/labs'], [l.title]])}<div class="page-head"><h1>${l.icon} ${l.title}</h1><div class="sub">${l.desc}</div></div><div data-w="${l.id}"></div>
-      <div class="row mt2"><a class="btn" href="#/labs">◀ Tous les labs</a>${App.gen.forModule(l.mod).length ? `<a class="btn soft" href="#/cours/${l.mod}?tab=pratique">S'entraîner sur ce thème ▶</a>` : ''}</div>`);
+      <div class="row mt2"><a class="btn" href="#/labs">◀ Tous les labs</a>${App.gen.forModule(l.mod).length ? `<a class="btn soft" href="#/cours/${l.mod}?tab=pratique">S'entraîner sur ce thème ▶</a>` : ''}</div>`, { help: 'labs' });
   });
 
   /* ---------- Fiche dernière heure ---------- */
@@ -47,7 +47,7 @@
     App.ui.mount(`<div class="page-head"><h1>⚡ Fiche « dernière heure »</h1><div class="sub">À relire le matin du concours. Imprimable (Ctrl + P).</div></div>
       ${f ? f.map((s) => `<div class="card mt2"><h2>${s.title}</h2><div class="prose">${s.html}</div></div>`).join('') : '<p class="muted">Fiche indisponible.</p>'}
       ${App.content.extras.reflexes ? `<div class="card mt2"><h2>🧭 Le jour J : 8 réflexes</h2><ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></div>` : ''}
-      <div class="row mt2"><button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`);
+      <div class="row mt2"><button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
   });
 
   /* ---------- Glossaire ---------- */
@@ -143,7 +143,8 @@
         <div class="row"><span class="set-lbl">Me rappeler :</span>${App.backup.everyControl()}</div>
         <div class="tiny muted">Sur ordinateur, tu peux aussi glisser-déposer un fichier de sauvegarde sur la fenêtre. Sur téléphone, le fichier arrive dans « Téléchargements » : envoie-le-toi (WhatsApp, e-mail) pour le garder ailleurs.</div>
       </div>
-      <a class="card hover mt2 row nowrap" href="#/apropos" style="color:inherit;text-decoration:none"><span style="font-size:1.6rem">ℹ️</span><div class="grow"><b>À propos de l'application</b><div class="small muted">Développeur, contact, sources et méthodes · version ${App.version}</div></div><span class="muted">›</span></a>`);
+      <div class="grid c2 mt2"><a class="card hover row nowrap" href="#/aide" style="color:inherit;text-decoration:none"><span style="font-size:1.6rem">❓</span><div class="grow"><b>Mode d'emploi</b><div class="small muted">Comment fonctionne chaque outil, raccourcis, FAQ</div></div><span class="muted">›</span></a><button class="card hover row nowrap" id="tourAgain" style="color:inherit;text-align:left;font:inherit;cursor:pointer"><span style="font-size:1.6rem">🗺️</span><div class="grow"><b>Revoir la visite guidée</b><div class="small muted">1 minute pour retrouver chaque élément</div></div><span class="muted">›</span></button></div>
+      <a class="card hover mt2 row nowrap" href="#/apropos" style="color:inherit;text-decoration:none"><span style="font-size:1.6rem">ℹ️</span><div class="grow"><b>À propos de l'application</b><div class="small muted">Développeur, contact, sources et méthodes · version ${App.version}</div></div><span class="muted">›</span></a>`, { help: 'profil' });
     const set = (k, val) => { st.settings[k] = val; App.store.save(); App.layout.refresh(); };
     v.querySelector('#sName').addEventListener('input', (e) => set('name', e.target.value.trim()));
     v.querySelector('#sDate').addEventListener('change', (e) => e.target.value && set('examDate', e.target.value));
@@ -158,6 +159,7 @@
     v.querySelector('#exp').addEventListener('click', () => { App.backup.download(); v.querySelector('.bk-status b').textContent = App.backup.lastLabel(); });
     v.querySelector('#imp').addEventListener('click', () => App.backup.pick());
     App.backup.bindEvery(v.querySelector('#bkBox'));
+    v.querySelector('#tourAgain').addEventListener('click', () => App.tour.start());
     v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.ui.applyTypo(); App.layout.applyNav(); App.layout.refresh(); R.go('/'); setTimeout(App.home.onboard, 300); }, true));
   });
 
@@ -200,5 +202,56 @@
         </div>
       </div>
       <p class="center small muted mt3">© ${new Date().getFullYear()} ${D.name} · Fait avec ❤️ pour les candidats du concours MEF.</p>`);
+  });
+
+  /* ---------- Mode d'emploi ---------- */
+  R.add('/aide', () => {
+    App.layout.setTitle('Mode d\'emploi');
+    const H = App.help.TEXTS;
+    const today = U.dayKey();
+    const plan = App.content.modules.filter((m) => m.day);
+    const ex = App.store.state.settings.examDate;
+    const sec = (id, title, html) => `<section class="card aide-sec" id="${id}"><h2>${title}</h2><div class="prose">${html}</div></section>`;
+    const tool = (k) => `<details class="aide-tool"><summary>${H[k].t}</summary><div class="prose">${H[k].h}</div></details>`;
+    const toc = [['demarrer', '🚀 Démarrer en 2 minutes'], ['semaine', '🗓️ Ta semaine jusqu\'au concours'], ['outils', '🧰 Chaque outil expliqué'], ['xp', '🏆 XP, niveaux, série et badges'], ['clavier', '⌨️ Raccourcis et gestes'], ['sauvegarde', '💾 Sauvegarde et changement d\'appareil'], ['faq', '❔ Questions fréquentes']];
+    App.ui.mount(`
+      <div class="page-head"><h1>❓ Mode d'emploi</h1><div class="sub">Tout ce qu'il faut savoir pour réviser efficacement avec l'application.</div></div>
+      <div class="row"><button class="btn primary" id="tourBtn">▶ Revoir la visite guidée</button><a class="btn" href="#/seance">🧭 Lancer la séance guidée</a></div>
+      <nav class="aide-toc card mt2">${toc.map(([id, t]) => `<a href="#/aide" data-to="${id}">${t}</a>`).join('')}</nav>
+      <div class="stack mt2">
+      ${sec('demarrer', '🚀 Démarrer en 2 minutes', `<ol class="steps">
+        <li>Sur l'accueil, touche <b>🧭 Séance guidée</b> : l'application enchaîne la séance du jour dans le bon ordre (rappel, pré-test, leçons, cartes, QCM, exercice, erreurs).</li>
+        <li>Pas le temps ? Fais au moins les <b>missions du jour</b> (2 leçons, 20 cartes, 1 défi éclair, le carnet d'erreurs).</li>
+        <li>Le bouton <b>▶ Reprendre</b> te ramène à la dernière leçon ouverte.</li>
+        <li>Pense à <b>💾 sauvegarder</b> ta progression de temps en temps (menu ou Profil).</li></ol>`)}
+      ${sec('semaine', '🗓️ Ta semaine jusqu\'au concours', `
+        <p>Le plan compte <b>${plan.length} séances de 2 h</b> jusqu'au concours (${U.fmtDay(ex)}). Une séance type :</p>
+        <ul><li><b>5 min</b> — rappel : réciter les « 5 phrases » de la veille ;</li><li><b>35 min</b> — leçons (avec le pré-test avant) ;</li><li><b>55 min</b> — exercices chronométrés : QCM, exercices type concours, générateurs ;</li><li><b>25 min</b> — correction et carnet d'erreurs.</li></ul>
+        ${App.md.table(['Date', 'Séance', 'Épreuve'], plan.map((m) => [`${m.day === today ? '👉 ' : ''}${U.fmtDay(m.day)}`, `<a href="#/seance?mod=${m.id}">${m.icon} ${m.short || m.title}</a>`, m.epreuve || '']))}
+        <p><b>Retard sur le plan ?</b> Fais la séance du jour d'abord, puis rattrape une séance passée avec « Changer de séance » dans la séance guidée. <b>La veille :</b> mode « Veille du concours » (fiche dernière heure, erreurs, cartes fragiles, mini-examen). <b>Le jour J :</b> relis la fiche et les réflexes, puis plus rien de nouveau.</p>`)}
+      ${sec('outils', '🧰 Chaque outil expliqué', ['seance', 'cours', 'lecon', 'cartes', 'quiz', 'gen', 'eclair', 'entrainement', 'erreurs', 'examen', 'labs', 'fiche'].map(tool).join('') + `<details class="aide-tool"><summary>✍️ Exercices type concours</summary><div class="prose"><p>Les exercices du plan, avec énoncé, chronomètre, corrigé et barème. Rédige sur papier, puis ouvre le corrigé de chaque question et attribue-toi <b>0, la moitié ou tous les points</b>. Certaines parties se vérifient automatiquement (adresses, calculs).</p></div></details>`)}
+      ${sec('xp', '🏆 XP, niveaux, série et badges', `<ul>
+        <li><b>XP</b> : 10 par bonne réponse (plus pour les questions difficiles), 1 pour un essai raté, 25 par leçon comprise, 15 par erreur vaincue, des bonus pour les examens.</li>
+        <li><b>Combo 🔥</b> : bonnes réponses d'affilée → XP ×1,5 dès 5, ×2 dès 10.</li>
+        <li><b>Objectif du jour</b> (réglable dans le Profil) : l'atteindre fait avancer ta <b>série</b> de jours.</li>
+        <li><b>Niveaux</b> : de « Novice du réseau » à des titres d'expert ; <b>${App.game.BADGES.length} badges</b> à débloquer (Profil).</li></ul>`)}
+      ${sec('clavier', '⌨️ Raccourcis et gestes', App.md.table(['Où', 'Touche', 'Action'], [
+        ['Partout', '<kbd>F</kbd>', 'Plein écran'], ['Questions', '<kbd>1</kbd>–<kbd>9</kbd> ou <kbd>A</kbd>–<kbd>J</kbd>', 'Choisir une réponse'], ['Questions', '<kbd>V</kbd> / <kbd>F</kbd>', 'Vrai / Faux'], ['Questions', '<kbd>Entrée</kbd>', 'Valider, puis continuer'], ['Quiz, cartes', '<kbd>Échap</kbd>', 'Quitter'],
+        ['Cartes', '<kbd>Espace</kbd>', 'Retourner la carte'], ['Cartes', '<kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd>', 'À revoir · Difficile · Bien · Facile'], ['Leçons', '<kbd>←</kbd> <kbd>→</kbd>', 'Leçon précédente / suivante']]) + '<p><b>Sur téléphone :</b> touche la carte pour la retourner ; le bouton d\'action (Valider, Continuer) reste en bas de l\'écran, sous le pouce ; ‹ en haut à gauche pour revenir en arrière.</p>')}
+      ${sec('sauvegarde', '💾 Sauvegarde et changement d\'appareil', `<ul>
+        <li>Ta progression s'enregistre <b>automatiquement</b> dans le navigateur de cet appareil.</li>
+        <li><b>Sauvegarder</b> : bouton 💾 du menu ou Profil → « Sauvegarder maintenant ». Un fichier <code>.json</code> est téléchargé : garde-le (Téléchargements, clé USB, envoie-le toi par WhatsApp ou e-mail).</li>
+        <li><b>Restaurer</b> sur un autre appareil : à la première ouverture, « J'ai déjà une sauvegarde » ; ou Profil → « Restaurer une sauvegarde » ; ou glisse le fichier sur la fenêtre (ordinateur). Un aperçu s'affiche avant de confirmer.</li>
+        <li>Attention : vider les données du navigateur ou utiliser la navigation privée efface la progression locale. D'où les rappels de sauvegarde.</li></ul>`)}
+      ${sec('faq', '❔ Questions fréquentes', `
+        <details class="aide-tool"><summary>Faut-il Internet ?</summary><div class="prose"><p>Non. Tout est dans le fichier : cours, exercices, polices, examens. Seuls les liens externes (WhatsApp, e-mail) en ont besoin.</p></div></details>
+        <details class="aide-tool"><summary>J'ai perdu ma progression !</summary><div class="prose"><p>Elle est liée au navigateur et à l'appareil. Si tu as une sauvegarde, restaure-la (Profil → Restaurer). Sinon, vérifie que tu ouvres le même fichier avec le même navigateur (pas en navigation privée).</p></div></details>
+        <details class="aide-tool"><summary>Ça marche sur iPhone ?</summary><div class="prose"><p>L'aperçu de l'app Fichiers n'exécute pas l'application : ouvre le fichier avec une app comme <i>Documents</i> (Readdle), ou utilise la version installable en ligne si elle est disponible (Profil → Installer).</p></div></details>
+        <details class="aide-tool"><summary>Les réponses à saisir : quel format ?</summary><div class="prose"><p>Adresses : 192.168.1.0 ; préfixes : /26 ou 26 selon le champ ; nombres à la française acceptés (1 022 ; 9,97) ; binaire sur 8 bits (11000000) ; IPv6 compressée ou complète selon la consigne.</p></div></details>
+        <details class="aide-tool"><summary>Le texte est trop petit / la police ne me plaît pas</summary><div class="prose"><p>Profil → Affichage et lecture : 3 polices (Nunito, Lexend, système) et 4 tailles de texte ; thème clair ou sombre.</p></div></details>
+        <details class="aide-tool"><summary>J'ai trouvé une erreur dans un cours</summary><div class="prose"><p>Signale-la au développeur (page <a href="#/apropos">À propos</a>) : e-mail ou WhatsApp. Merci !</p></div></details>`)}
+      </div>`, { narrow: true });
+    document.getElementById('tourBtn').addEventListener('click', () => App.tour.start());
+    U.$$('[data-to]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); const t = document.getElementById(a.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
   });
 })();

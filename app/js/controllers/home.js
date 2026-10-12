@@ -159,8 +159,8 @@
       App.fx.sound('level');
       App.fx.confetti(0.9);
       const n = App.backup.name();
-      App.ui.toast('🚀', `<b>C'est parti${n ? ', ' + n : ''} !</b><div class="small muted">Commence par la séance du jour ou par un pré-test.</div>`, '', 4500);
       App.router.resolve();
+      setTimeout(() => App.tour.start(), 900);
     };
 
     const views = [
