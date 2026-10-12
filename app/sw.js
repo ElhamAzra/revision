@@ -2,7 +2,7 @@
    Quand l'application est servie en ligne (ex. GitHub Pages), tous les fichiers sont mis en cache
    dès l'installation : l'application fonctionne ensuite entièrement hors ligne et peut être installée
    sur l'écran d'accueil (Android, iPhone, ordinateur). */
-const CACHE = 'revision-mef-87dc4e5376';
+const CACHE = 'revision-mef-d8ea80c938';
 const ASSETS = [
   './',
   './index.html',
