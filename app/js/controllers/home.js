@@ -43,7 +43,6 @@
     const doneM = ms.filter((m) => m.done).length;
     const tips = App.content.extras.tips;
     const tip = tips.length ? tips[(U.daysBetween('2026-01-01', today) + new Date().getHours()) % tips.length] : null;
-    const weak = App.progress.weakest();
     const hour = new Date().getHours();
     const hello = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
     const name = st.settings.name ? ' ' + U.esc(st.settings.name) : '';
@@ -103,7 +102,7 @@
           <div class="mt1">${ms.map((m) => `<a class="mission ${m.done ? 'done' : ''}" href="${m.href}" style="color:inherit;text-decoration:none"><span class="tick">✓</span><div class="grow"><div class="m-title">${m.title}</div><div class="m-sub">${m.sub}</div></div><span class="muted">›</span></a>`).join('')}</div>
         </div>
         <div class="stack">
-          ${weak ? `<div class="card"><h3>🧭 Ton point faible du moment</h3><div class="row nowrap mt1">${App.ui.ring(App.progress.mastery(weak.id), 58, 6, weak.color)}<div class="grow"><b>${weak.icon} ${weak.title}</b><div class="small muted">${weak.subtitle || ''}</div></div></div><div class="row mt2"><a class="btn sm soft" href="#/cours/${weak.id}">Revoir le cours</a><a class="btn sm" href="#/quiz/${weak.id}">QCM</a><a class="btn sm" href="#/cartes?mod=${weak.id}">Cartes</a></div></div>` : ''}
+          ${App.prep.card()}
           ${tip ? `<div class="card tip-day"><span class="ico">💡</span><div><div class="tiny muted" style="font-weight:800;text-transform:uppercase;letter-spacing:.06em">Astuce du moment</div><div>${tip}</div></div></div>` : ''}
           <div class="card"><h3>🚀 Accès rapide</h3><div class="row mt1">
             <a class="btn sm primary" href="#/quiz/mix">🎲 Mélange intelligent</a>

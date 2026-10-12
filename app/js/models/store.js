@@ -26,7 +26,8 @@
     pretest: {},        // { modId: { score, total, at } }
     counters: {},       // compteurs divers pour les badges
     notes: {},          // { lessonId: texte }
-    guided: null        // séance guidée du jour { day, mod, done, ... }
+    guided: null,       // séance guidée du jour { day, mod, done, ... }
+    readiness: {}       // { 'AAAA-MM-JJ': moyenne estimée }
   });
 
   let mem = null; // repli si localStorage indisponible

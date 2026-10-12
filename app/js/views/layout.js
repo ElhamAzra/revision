@@ -20,6 +20,7 @@
     { href: '#/entrainement', ico: '🎯', label: 'Entraînement', match: /^\/(entrainement|gen|quiz|exo|eclair)/ },
     { href: '#/labs', ico: '🧪', label: 'Labs interactifs', match: /^\/labs?/ },
     { href: '#/examen', ico: '📝', label: 'Examen blanc', match: /^\/examen/ },
+    { href: '#/preparation', ico: '📈', label: 'Indice de préparation', match: /^\/preparation/ },
     { href: '#/erreurs', ico: '🩹', label: 'Carnet d\'erreurs', match: /^\/erreurs/, count: () => Object.keys(App.store.state.errors).length },
     { sep: 'Mémo' },
     { href: '#/fiche', ico: '⚡', label: 'Fiche dernière heure', match: /^\/fiche/ },
@@ -33,7 +34,7 @@
     { href: '#/', ico: '🏠', label: 'Accueil', match: /^\/$/ },
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
-    { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs)/ },
+    { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs|preparation)/ },
     { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide)/ }
   ];
 
