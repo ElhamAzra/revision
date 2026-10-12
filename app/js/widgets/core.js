@@ -62,7 +62,7 @@
     el.innerHTML = `
       <div class="w-h">🎬 ${U.esc(spec.title || 'Échange animé')}</div>
       <div class="seq">
-        <div class="actors" style="grid-template-columns:repeat(${n},1fr)">${spec.actors.map((a) => `<div class="actor">${a}</div>`).join('')}</div>
+        <div class="actors" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${spec.actors.map((a) => `<div class="actor">${a}</div>`).join('')}</div>
         <div class="lanes">
           ${spec.actors.map((_, i) => `<div class="lifeline" style="left:${center(i)}%"></div>`).join('')}
           ${spec.msgs.map((m, k) => {

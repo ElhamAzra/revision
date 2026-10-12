@@ -14,6 +14,14 @@ Aucune installation, aucune connexion Internet.
 
 La progression (XP, cartes, erreurs, badges) est enregistrée dans le navigateur. Pour passer du PC au téléphone : **Profil → Exporter**, puis **Importer** sur l'autre appareil.
 
+## Confort d'utilisation
+
+- **S'adapte à tous les écrans** : menu latéral complet sur grand écran (repliable en icônes), rail d'icônes sur écran moyen ou téléphone en paysage, barre d'onglets en bas sur téléphone. Le contenu occupe toute la largeur disponible.
+- **Plein écran** : bouton ⛶ (ou touche **F** sur ordinateur).
+- **Mode concentration** pendant les QCM, cartes et examens : plus de menus, une barre de progression, le bouton d'action toujours à portée du pouce. **Échap** ou ✕ pour quitter.
+- **Leçons** : sommaire du module à droite sur grand écran, barre de lecture, boutons précédente / compris / suivante toujours visibles sur téléphone, et bouton **Reprendre** sur l'accueil.
+- **Polices intégrées** (fonctionnent hors ligne) : *Nunito* (ronde, par défaut), *Lexend* (conçue pour lire plus vite) ou police du système, et 4 tailles de texte : **Profil → Affichage et lecture**. Thème clair / sombre.
+
 ## Ce que contient l'application
 
 - **Cours** : un module de fondations (binaire, hexadécimal, masques, calcul mental) + les séances du plan, chacune avec « l'essentiel en 30 secondes », des encadrés *Piège concours* / *Réflexe jour J*, des pas-à-pas, des animations (ARP, DHCP, TCP…) et des questions de vérification. Les erreurs relevées dans les supports de cours sont signalées et corrigées.
@@ -31,6 +39,7 @@ Structure MVC en scripts classiques (compatibles `file://`), sans dépendance ni
 ```
 app/
 ├── index.html            point d'entrée unique
+├── css/fonts.css         polices Lexend, Nunito, JetBrains Mono (base64, licence SIL OFL 1.1)
 ├── css/app.css           thèmes clair/sombre, responsive
 ├── js/core/              utilitaires, routeur, effets, correction des réponses, registre des générateurs
 ├── js/lib/               calcul IPv4/IPv6, aides de mise en forme du contenu

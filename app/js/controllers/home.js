@@ -54,6 +54,18 @@
     else if (ex.days === 0) { heroCount = 'Jour J'; heroText = 'Respire. Tu as travaillé. Lis tout le sujet, commence par ce que tu maîtrises.'; }
     else { heroCount = '✓'; heroText = 'Le concours est passé — tu peux continuer à t\'entraîner.'; }
 
+    // Reprendre là où on s'était arrêté : la leçon ouverte en dernier (ou la suivante si elle est comprise)
+    let resume = null;
+    const last = st.settings.last;
+    if (last) {
+      const lm = App.content.mod(last.mod);
+      if (lm) {
+        let l = lm.lessons[last.idx];
+        if (l && App.progress.lessonDone(l.id)) l = lm.lessons.slice(last.idx + 1).find((x) => !App.progress.lessonDone(x.id)) || null;
+        if (l) resume = { m: lm, l };
+      }
+    }
+
     const passed = App.content.modules.filter((m) => m.day && m.day < today && App.progress.mastery(m.id) < 0.35);
 
     App.ui.mount(`
@@ -64,8 +76,9 @@
             <div class="count mt1">${heroCount}<small>${heroText}</small></div>
             <div class="hero-goal-m"><div class="row between small" style="opacity:.92"><span>🎯 Objectif du jour</span><b>${t.xp} / ${st.settings.dailyGoal} XP</b></div>${App.ui.bar(goalPct)}</div>
             <p class="sub mt1 mb0">${todayMod ? `Séance du jour : <b>${todayMod.icon} ${todayMod.title}</b>` : 'Choisis un module ou lance un entraînement.'}</p>
-            <div class="row mt2">
-              ${todayMod ? `<a class="btn white lg" href="#/cours/${todayMod.id}">▶ Commencer la séance</a>` : '<a class="btn white lg" href="#/cours">📚 Ouvrir les cours</a>'}
+            <div class="row mt2 hero-cta">
+              ${resume ? `<a class="btn white lg" href="#/cours/${resume.m.id}/${resume.l.idx}" title="${U.esc(resume.l.title)}">▶ Reprendre <span class="hero-cta-sub">${resume.m.icon} ${U.esc(resume.l.title)}</span></a>` : ''}
+              ${todayMod ? `<a class="btn ${resume ? '' : 'white lg'}" href="#/cours/${todayMod.id}">${resume ? '📅 Séance du jour' : '▶ Commencer la séance'}</a>` : (resume ? '' : '<a class="btn white lg" href="#/cours">📚 Ouvrir les cours</a>')}
               <a class="btn" href="#/eclair/mix">⚡ Défi éclair</a>
             </div>
           </div>
@@ -76,7 +89,7 @@
         </div>
       </section>
 
-      <div class="grid c4 mt2">
+      <div class="grid k4 mt2">
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico">⭐</span><div><div class="v">Niv. ${L.level}</div><div class="l">${L.title}</div></div></a>
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico"><span class="flame">🔥</span></span><div><div class="v acc-t">${streak} j</div><div class="l">série (record ${st.streak.best})</div></div></a>
         <a class="card hover kpi" href="#/cartes" style="color:inherit;text-decoration:none"><span class="ico">🃏</span><div><div class="v">${cards.due}</div><div class="l">cartes à revoir · ${cards.fresh} nouvelles</div></div></a>
@@ -104,7 +117,7 @@
       ${passed.length ? `<div class="co trap mt2"><div class="co-h">⏪ Rattrapage conseillé</div>Ces séances sont passées dans le plan mais encore peu maîtrisées : ${passed.map((m) => `<a href="#/cours/${m.id}"><b>${m.icon} ${m.short}</b></a>`).join(' · ')}. Une leçon + un QCM par séance suffit à remonter.</div>` : ''}
 
       <div class="row between mt3"><h2 class="mb0">Tes modules</h2><a href="#/plan" class="small">Voir le plan →</a></div>
-      <div class="grid auto mt1">${App.content.modules.map((m) => modCard(m, today)).join('')}</div>
+      <div class="mod-grid mt1">${App.content.modules.map((m) => modCard(m, today)).join('')}</div>
     `);
   });
 
@@ -116,11 +129,44 @@
     const done = m.lessons.filter((l) => App.progress.lessonDone(l.id)).length;
     return `<a class="card hover mod-card ${isToday ? 'today' : ''}" style="--mc:${m.color};color:inherit;text-decoration:none" href="#/cours/${m.id}">
       <span class="m-ico">${m.icon}</span>
-      <div class="grow"><div class="m-num">${m.label}</div><div class="m-title">${m.title}</div><div class="m-meta mt1">${when} <span class="muted">· ${done}/${m.lessons.length} leçons</span></div></div>
-      ${App.ui.ring(mast, 48, 5, m.color)}
+      <div class="m-head"><div class="m-num">${m.label}</div></div>
+      ${App.ui.ring(mast, 46, 5, m.color)}
+      <div class="m-title">${m.title}</div>
+      <div class="m-meta">${when}<span>${done}/${m.lessons.length} leçons</span></div>
     </a>`;
   }
-  App.home = { modCard };
+  /* Premier lancement : accueil, prénom, méthode en 3 temps, choix de police et de taille */
+  function onboard() {
+    const st = App.store.state;
+    if (st.settings.onboarded) return;
+    if (st.xp > 0) { st.settings.onboarded = true; App.store.save(); return; }
+    const m = App.ui.modal(`
+      <div class="onb">
+        <div class="big-emoji">📡</div>
+        <h2 class="center mt1">Bienvenue dans ta révision du concours MEF</h2>
+        <p class="center muted">Systèmes &amp; Réseaux · 100 % hors ligne · ta progression reste sur cet appareil.</p>
+        <div class="onb-steps">
+          <div><span>📖</span><b>Comprendre</b><small>Leçons courtes, l'essentiel en 30 s, schémas animés.</small></div>
+          <div><span>🎯</span><b>S'entraîner</b><small>QCM, calculs infinis, cartes qui reviennent au bon moment.</small></div>
+          <div><span>🏁</span><b>Se tester</b><small>Examens blancs chronométrés et carnet d'erreurs.</small></div>
+        </div>
+        <label class="lbl mt2" for="onbName">Ton prénom (facultatif)</label>
+        <input class="input" id="onbName" autocomplete="given-name" placeholder="Ex. : Aïcha">
+        <div class="mt2" id="onbTypo">${App.ui.typoControls()}</div>
+        <button class="btn primary lg block mt3" id="onbGo">C'est parti 🚀</button>
+      </div>`, { wide: true, onClose: () => { st.settings.onboarded = true; App.store.save(); } });
+    App.ui.bindTypo(m.el.querySelector('#onbTypo'));
+    m.el.querySelector('#onbGo').addEventListener('click', () => {
+      const n = m.el.querySelector('#onbName').value.trim();
+      if (n) st.settings.name = n;
+      st.settings.onboarded = true;
+      App.store.save();
+      m.close();
+      App.router.resolve();
+    });
+  }
+
+  App.home = { modCard, onboard };
 
   /* ---------- Plan de révision ---------- */
   R.add('/plan', () => {

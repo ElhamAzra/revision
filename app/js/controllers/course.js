@@ -10,7 +10,7 @@
     const today = U.dayKey();
     App.ui.mount(`
       <div class="page-head"><h1>📚 Cours</h1><div class="sub">${App.content.lessonCount()} leçons, construites à partir du plan de révision et des supports de cours de l'ESTN. Chaque leçon commence par <b>l'essentiel en 30 secondes</b>.</div></div>
-      <div class="grid auto">${App.content.modules.map((m) => App.home.modCard(m, today)).join('')}</div>`);
+      <div class="mod-grid">${App.content.modules.map((m) => App.home.modCard(m, today)).join('')}</div>`);
   });
 
   R.add('/cours/:mod', (p, query) => {
@@ -94,11 +94,22 @@
     const prev = m.lessons[i - 1], next = m.lessons[i + 1];
     const isDone = App.progress.lessonDone(l.id);
     const note = App.store.state.notes[l.id] || '';
+    App.store.state.settings.last = { mod: m.id, idx: i, t: Date.now() };
+    App.store.save();
+    const doneN = m.lessons.filter((x) => App.progress.lessonDone(x.id)).length;
+    const outline = `<aside class="lesson-aside"><div class="la-card">
+        <a class="la-head" href="#/cours/${m.id}"><span class="m-ico" style="background:color-mix(in srgb, ${m.color} 16%, var(--surface))">${m.icon}</span><span><span class="la-num" style="color:${m.color}">${m.label}</span><span class="la-title">${m.short || m.title}</span></span></a>
+        ${App.ui.bar(doneN / m.lessons.length, 'ok thin')}<div class="tiny muted mt1">${doneN}/${m.lessons.length} leçons comprises</div>
+        <ol class="la-list">${m.lessons.map((x) => `<li><a href="#/cours/${m.id}/${x.idx}" class="${x.idx === i ? 'on' : ''} ${App.progress.lessonDone(x.id) ? 'done' : ''}"><span class="n">${App.progress.lessonDone(x.id) ? '✓' : x.idx + 1}</span><span class="t">${x.title}</span></a></li>`).join('')}</ol>
+        <div class="la-actions"><a class="btn sm soft" href="#/quiz/${m.id}">✅ QCM</a><a class="btn sm" href="#/cartes?go=1&mod=${m.id}">🃏 Cartes</a></div>
+      </div></aside>`;
     const v = App.ui.mount(`
-      ${App.ui.crumbs([['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['Leçon ' + (i + 1)]])}
-      <div style="--mc:${m.color}">
+      <div class="read-progress" style="--mc:${m.color}"><i></i></div>
+      <div class="lesson-layout" style="--mc:${m.color}">
+      <div class="lesson-main">
+        ${App.ui.crumbs([['Cours', '#/cours'], [m.short || m.title, '#/cours/' + m.id], ['Leçon ' + (i + 1)]])}
         <div class="row between" style="align-items:flex-start">
-          <div class="grow"><div class="tiny" style="font-weight:800;color:${m.color};text-transform:uppercase;letter-spacing:.06em">${m.icon} ${m.label} · leçon ${i + 1}/${m.lessons.length} · ${l.min || 5} min</div><h1 class="mt1">${l.title}</h1></div>
+          <div class="grow"><div class="lesson-kicker" style="color:${m.color}">${m.icon} ${m.label} · leçon ${i + 1}/${m.lessons.length} · ${l.min || 5} min</div><h1 class="mt1">${l.title}</h1></div>
           ${isDone ? '<span class="chip ok">✓ comprise</span>' : ''}
         </div>
         ${App.ui.bar((i + 1) / m.lessons.length)}
@@ -106,13 +117,24 @@
         <article class="prose">${l.html}</article>
         ${l.check.length ? `<h2 class="mt3">🧩 Vérifie ta compréhension</h2><p class="muted small">Réponds sans relire : c'est l'effort de rappel qui fixe la mémoire. Les erreurs vont dans ton carnet.</p><div class="stack" id="checks"></div>` : ''}
         <details class="card mt3"><summary style="cursor:pointer;font-weight:700">📝 Mes notes sur cette leçon</summary><textarea class="input mt1" rows="3" id="note" placeholder="Reformule avec tes mots (technique Feynman) : si tu sais l'expliquer simplement, tu l'as compris.">${U.esc(note)}</textarea></details>
-        <div class="row mt3">
-          ${prev ? `<a class="btn" href="#/cours/${m.id}/${i - 1}">◀ ${U.esc(prev.title)}</a>` : `<a class="btn" href="#/cours/${m.id}">◀ Sommaire</a>`}
-          <span class="grow"></span>
-          <button class="btn ${isDone ? 'ghost' : 'ok'}" id="markDone">${isDone ? '✓ Comprise' : '✓ J\'ai compris'}</button>
-          ${next ? `<a class="btn primary" href="#/cours/${m.id}/${i + 1}" id="nextL">${U.esc(next.title)} ▶</a>` : `<a class="btn primary" href="#/quiz/${m.id}">QCM de la séance ▶</a>`}
+        <div class="lesson-dock">
+          ${prev ? `<a class="btn" href="#/cours/${m.id}/${i - 1}" title="${U.esc(prev.title)}">◀<span class="hide-m"> ${U.esc(prev.title)}</span></a>` : `<a class="btn" href="#/cours/${m.id}">◀<span class="hide-m"> Sommaire</span></a>`}
+          <button class="btn ${isDone ? 'ghost' : 'ok'}" id="markDone">${isDone ? '✓ Comprise' : '✓ <span class="hide-m">J\'ai compris</span><span class="show-m">Compris</span>'}</button>
+          ${next ? `<a class="btn primary" href="#/cours/${m.id}/${i + 1}" id="nextL" title="${U.esc(next.title)}"><span class="hide-m">${U.esc(next.title)} </span><span class="show-m">Suivante </span>▶</a>` : `<a class="btn primary" href="#/quiz/${m.id}">QCM ▶</a>`}
         </div>
-      </div>`);
+      </div>
+      ${outline}
+      </div>`, { wide: true });
+    const rp = v.querySelector('.read-progress > i');
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      rp.style.width = (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 100) + '%';
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    App.router.onLeave(() => window.removeEventListener('scroll', onScroll));
+    onScroll();
+    const cur = v.querySelector('.la-list a.on');
+    if (cur && cur.scrollIntoView) { const lst = cur.closest('.la-list'); if (lst) lst.scrollTop = cur.offsetTop - lst.clientHeight / 2; }
     // questions de vérification
     const host = v.querySelector('#checks');
     let answered = 0;

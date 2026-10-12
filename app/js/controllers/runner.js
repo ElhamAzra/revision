@@ -13,31 +13,39 @@
       const S = { idx: 0, results: [], combo: 0, maxCombo: 0, xp: 0, t0: Date.now(), score: 0, done: false, current: null, advancing: false };
       let timerId = null, timeLeft = opts.time || 0;
 
+      const crumbLinks = (opts.crumbs || []).filter((c) => c[1]);
+      const backHref = opts.backHref || (crumbLinks.length ? crumbLinks[crumbLinks.length - 1][1] : '#/entrainement');
       const v = App.ui.mount(`
-        ${opts.crumbs ? App.ui.crumbs(opts.crumbs) : ''}
-        <div class="page-head"><h1>${opts.title}</h1>${opts.sub ? `<div class="sub">${opts.sub}</div>` : ''}</div>
-        <div class="quiz-top">
-          <span class="small muted nowrap" id="qCount"></span>
-          ${infinite && mode !== 'blitz' ? '<span class="grow"></span>' : App.ui.bar(0)}
-          ${mode === 'blitz' ? '<span class="timer" id="qTimer">0:00</span>' : ''}
+        <div class="focus-head">
+          <a class="fh-close" href="${backHref}" title="Quitter (Échap)" aria-label="Quitter">✕</a>
+          <div class="fh-mid">
+            <div class="fh-title">${opts.title}</div>
+            ${infinite && mode !== 'blitz' ? '' : App.ui.bar(0, 'fh-bar')}
+          </div>
+          <span class="fh-count" id="qCount"></span>
           <span class="combo" id="qCombo"></span>
-          ${mode !== 'blitz' ? '<button class="btn sm ghost" id="qEnd">Terminer</button>' : ''}
+          ${mode === 'blitz' ? '<span class="timer" id="qTimer">0:00</span>' : ''}
+          ${mode !== 'blitz' ? '<button class="btn sm ghost" id="qEnd" title="Terminer et voir le bilan">Terminer</button>' : ''}
         </div>
-        <div id="qHost"></div>`);
-      App.layout.setTitle(opts.title.replace(/<[^>]+>/g, ''));
+        ${opts.sub ? `<div class="focus-sub">${opts.sub}</div>` : ''}
+        <div id="qHost" class="focus-body"></div>`, { focus: true });
+      App.layout.setBack(backHref);
       const host = v.querySelector('#qHost');
-      const bar = v.querySelector('.quiz-top .bar > i');
+      const bar = v.querySelector('.fh-bar > i');
       const endBtn = v.querySelector('#qEnd');
       if (endBtn) endBtn.addEventListener('click', () => finish());
 
       App.ui.keys({ Enter: (e) => S.current && S.current.key(e), default: null });
-      const onKey = (e) => { if (e.key !== 'Enter' && S.current) S.current.key(e); };
+      const onKey = (e) => {
+        if (e.key === 'Escape') { if (!document.querySelector('.modal-bg')) location.hash = backHref; return; }
+        if (e.key !== 'Enter' && S.current) S.current.key(e);
+      };
       document.addEventListener('keydown', onKey);
       App.router.onLeave(() => { document.removeEventListener('keydown', onKey); clearInterval(timerId); S.done = true; });
 
       function updateTop() {
         const cnt = v.querySelector('#qCount');
-        if (mode === 'blitz') cnt.innerHTML = `Score <b class="pri-t" style="font-size:1.1rem">${S.score}</b>`;
+        if (mode === 'blitz') cnt.innerHTML = `Score <b class="pri-t" style="font-size:1.15em">${S.score}</b>`;
         else cnt.textContent = infinite ? `${S.results.filter((r) => r.ok).length} ✓ / ${S.results.length}` : `${Math.min(S.idx + 1, total)} / ${total}`;
         if (bar && !infinite) bar.style.width = Math.round((S.results.length / total) * 100) + '%';
         const c = v.querySelector('#qCombo');
@@ -126,6 +134,7 @@
         const emoji = n === 0 ? '👋' : pct >= 0.9 ? '🏆' : pct >= 0.7 ? '🎉' : pct >= 0.5 ? '💪' : '📚';
         const msg = n === 0 ? 'Aucune réponse cette fois.' : pct >= 0.9 ? 'Excellent ! Tu maîtrises.' : pct >= 0.7 ? 'Très bien ! Encore un effort sur les erreurs ci-dessous.' : pct >= 0.5 ? 'C\'est en bonne voie. Relis les explications des erreurs.' : 'Chaque erreur est une leçon : elles sont dans ton carnet, on les reverra.';
         const wrong = S.results.filter((r) => !r.ok);
+        App.ui.setFocus(false);
         v.innerHTML = `
           ${opts.crumbs ? App.ui.crumbs(opts.crumbs) : ''}
           <div class="card pad-lg center">
@@ -133,7 +142,7 @@
             <h1 class="mt1">${mode === 'blitz' ? `Score : ${S.score}` : `${ok} / ${n} bonnes réponses`}</h1>
             ${record ? '<div class="chip acc mb1">🏅 Nouveau record personnel !</div>' : ''}
             <p class="muted">${msg}</p>
-            <div class="grid c3 mt2" style="max-width:520px;margin-left:auto;margin-right:auto">
+            <div class="grid k3 mt2" style="max-width:560px;margin-left:auto;margin-right:auto">
               <div class="kpi" style="justify-content:center"><div><div class="v pri-t">+${S.xp}</div><div class="l">XP gagnés</div></div></div>
               <div class="kpi" style="justify-content:center"><div><div class="v acc-t">🔥 ${S.maxCombo}</div><div class="l">meilleur combo</div></div></div>
               <div class="kpi" style="justify-content:center"><div><div class="v">${U.fmtDuration(secs)}</div><div class="l">durée</div></div></div>
@@ -141,7 +150,7 @@
             <div class="row mt3" style="justify-content:center">
               ${opts.retry ? '<button class="btn primary" data-retry>🔁 Recommencer</button>' : ''}
               ${wrong.length ? '<a class="btn soft" href="#/erreurs">🩹 Voir le carnet d\'erreurs</a>' : ''}
-              <a class="btn" href="${opts.backHref || '#/entrainement'}">Retour</a>
+              <a class="btn" href="${backHref}">Retour</a>
             </div>
           </div>
           ${wrong.length ? `<h2 class="mt3">À revoir (${wrong.length})</h2>

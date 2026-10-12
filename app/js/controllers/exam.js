@@ -72,13 +72,28 @@
     const resp = qs.map(() => null);
     let cur = 0, left = conf.min * 60, tid = null, finished = false;
     const v = App.ui.mount(`
-      ${App.ui.crumbs([['Examen', '#/examen'], [conf.label]])}
-      <div class="page-head row between"><h1 class="mb0">⚡ ${conf.label}</h1><span class="timer" id="tm"></span></div>
-      <div class="card"><div class="small muted mb1">Clique sur un numéro pour naviguer. Aucune correction avant la fin.</div><div class="row" id="pal" style="gap:.35rem"></div></div>
+      <div class="focus-head">
+        <a class="fh-close" href="#/examen" title="Quitter l'examen" aria-label="Quitter" data-quit>✕</a>
+        <div class="fh-mid"><div class="fh-title">⚡ ${conf.label}</div>${App.ui.bar(0, 'fh-bar')}</div>
+        <span class="timer" id="tm"></span>
+        <button class="btn sm accent" id="fin">Rendre</button>
+      </div>
+      <details class="card exam-pal" open><summary><span>Questions</span><span class="small muted" id="palInfo"></span></summary><div class="row mt1" id="pal" style="gap:.35rem"></div></details>
       <div id="qh" class="mt2"></div>
-      <div class="row mt2"><button class="btn" id="pv">◀ Précédente</button><span class="grow"></span><button class="btn" id="nx">Suivante ▶</button><button class="btn accent" id="fin">Rendre la copie</button></div>`);
+      <div class="exam-nav"><button class="btn" id="pv">◀ Précédente</button><span class="grow"></span><button class="btn primary" id="nx">Suivante ▶</button></div>`, { focus: true });
+    App.layout.setBack('#/examen');
+    v.querySelector('[data-quit]').addEventListener('click', (e) => {
+      if (finished) return;
+      e.preventDefault();
+      App.ui.confirm('<h3>Quitter l\'examen ?</h3><p>Tes réponses seront perdues.</p>', 'Quitter', () => { finished = true; location.hash = '#/examen'; }, true);
+    });
+    if (window.innerWidth <= 880) v.querySelector('.exam-pal').removeAttribute('open');
     const pal = v.querySelector('#pal');
     function drawPal() {
+      const answeredN = resp.filter((r) => r != null && (!Array.isArray(r) || r.some((x) => x != null && String(x).trim() !== ''))).length;
+      v.querySelector('#palInfo').textContent = `${answeredN} / ${qs.length} répondues`;
+      const pb = v.querySelector('.fh-bar > i');
+      if (pb) pb.style.width = Math.round((answeredN / qs.length) * 100) + '%';
       pal.innerHTML = qs.map((q, i) => `<button class="btn sm ${i === cur ? 'primary' : resp[i] != null && (!Array.isArray(resp[i]) || resp[i].some((x) => x != null && String(x).trim() !== '')) ? 'soft' : ''}" data-i="${i}" style="min-width:2.4rem;padding:.3rem .4rem">${i + 1}${q._e1 ? '<sup style="font-size:.6em">E1</sup>' : ''}</button>`).join('');
       U.$$('[data-i]', pal).forEach((b) => b.addEventListener('click', () => { cur = +b.dataset.i; show(); }));
     }
@@ -92,6 +107,7 @@
       drawPal();
       v.querySelector('#pv').disabled = cur === 0;
       v.querySelector('#nx').disabled = cur === qs.length - 1;
+      if (window.innerWidth <= 880) window.scrollTo(0, 0);
     }
     v.querySelector('#pv').addEventListener('click', () => { if (cur > 0) { cur--; show(); } });
     v.querySelector('#nx').addEventListener('click', () => { if (cur < qs.length - 1) { cur++; show(); } });
@@ -116,6 +132,7 @@
       if (finished) return;
       finished = true;
       clearInterval(tid);
+      App.ui.setFocus(false);
       const res = qs.map((q, i) => (resp[i] == null ? { ok: false, score: 0 } : App.quiz.check(q, resp[i])));
       const part1 = qs.map((q, i) => ({ q, r: res[i] })).filter((x) => x.q._e1);
       const part2 = qs.map((q, i) => ({ q, r: res[i] })).filter((x) => !x.q._e1);

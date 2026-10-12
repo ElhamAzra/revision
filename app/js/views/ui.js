@@ -8,12 +8,66 @@
     root: () => document.getElementById('view'),
 
     /* Monte le HTML d'une page puis hydrate les widgets interactifs */
+    /* opts : { wide, narrow, focus } — focus = plein écran pour la question (sans navigation) */
     mount(html, opts) {
+      opts = opts || {};
       const v = ui.root();
-      v.className = 'view' + (opts && opts.wide ? ' wide' : '');
+      v.className = 'view' + (opts.wide ? ' wide' : '') + (opts.narrow ? ' narrow' : '') + (opts.focus ? ' focus' : '');
+      ui.setFocus(!!opts.focus);
       v.innerHTML = html;
       ui.hydrate(v);
+      if (App.layout.applyBack) App.layout.applyBack();
       return v;
+    },
+
+    setFocus(on) {
+      const r = document.documentElement;
+      if (on) r.dataset.focus = '1'; else delete r.dataset.focus;
+      const v = ui.root();
+      if (v && !on) v.classList.remove('focus');
+    },
+
+    /* Plein écran natif (Fullscreen API) quand le navigateur le permet */
+    fullscreen: {
+      supported() {
+        const d = document;
+        return !!(d.fullscreenEnabled || d.webkitFullscreenEnabled);
+      },
+      is() { return !!(document.fullscreenElement || document.webkitFullscreenElement); },
+      toggle() {
+        const d = document, el = d.documentElement;
+        try {
+          if (ui.fullscreen.is()) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+          else {
+            const p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el, { navigationUI: 'hide' });
+            if (p && p.catch) p.catch(() => {});
+          }
+        } catch (e) { /* refus du navigateur : on ignore */ }
+      }
+    },
+
+    /* Contrôles « Affichage » réutilisés par le profil et l'écran d'accueil du premier lancement */
+    typoControls() {
+      const st = App.store.state.settings;
+      const fonts = [['nunito', 'Nunito', 'ronde et chaleureuse'], ['lexend', 'Lexend', 'conçue pour lire plus vite'], ['system', 'Système', 'police de l\'appareil']];
+      const sizes = [['s', 'A', '.85rem'], ['m', 'A', '1rem'], ['l', 'A', '1.2rem'], ['xl', 'A', '1.4rem']];
+      return `<div class="typo-ctl">
+        <div><div class="lbl">Police</div><div class="font-pick">${fonts.map(([k, n, d]) => `<button type="button" data-font="${k}" class="${(st.font || 'nunito') === k ? 'on' : ''}"><span class="fp-a fp-${k}">Aa</span><span><b>${n}</b><small>${d}</small></span></button>`).join('')}</div></div>
+        <div><div class="lbl">Taille du texte</div><div class="seg size-pick">${sizes.map(([k, a, fs]) => `<button type="button" data-size="${k}" class="${(st.textSize || 'm') === k ? 'on' : ''}" style="font-size:${fs}" aria-label="Taille ${k.toUpperCase()}">${a}</button>`).join('')}</div></div>
+      </div>`;
+    },
+    bindTypo(root) {
+      const st = App.store.state.settings;
+      U.$$('[data-font]', root).forEach((b) => b.addEventListener('click', () => { st.font = b.dataset.font; App.store.save(); ui.applyTypo(); U.$$('[data-font]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
+      U.$$('[data-size]', root).forEach((b) => b.addEventListener('click', () => { st.textSize = b.dataset.size; App.store.save(); ui.applyTypo(); U.$$('[data-size]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
+    },
+
+    /* Police et taille du texte (réglages du profil) */
+    applyTypo() {
+      const st = App.store.state.settings;
+      const r = document.documentElement;
+      r.dataset.font = st.font || 'nunito';
+      r.style.setProperty('--fsr', { s: 0.9375, m: 1, l: 1.1, xl: 1.2 }[st.textSize || 'm'] || 1);
     },
 
     hydrate(root) {
@@ -105,6 +159,8 @@
 
     /* Petite aide : bouton « retour » cohérent */
     crumbs(items) {
+      const lk = items.filter((i) => i[1]);
+      if (lk.length && App.layout.setBack) App.layout.setBack(lk[lk.length - 1][1]);
       return '<div class="crumbs">' + items.map((i) => (i[1] ? `<a href="${i[1]}">${i[0]}</a>` : `<span>${i[0]}</span>`)).join(' › ') + '</div>';
     },
 

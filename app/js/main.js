@@ -6,6 +6,7 @@
   function boot() {
     App.store.load();
     App.ui.applyTheme();
+    App.ui.applyTypo();
     if (window.matchMedia) {
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
       const onChange = () => { if (App.store.state.settings.theme === 'auto') App.ui.applyTheme(); };
@@ -13,6 +14,7 @@
     }
     App.layout.render();
     App.router.start();
+    if (App.home && App.home.onboard) setTimeout(App.home.onboard, 350);
     window.addEventListener('beforeunload', () => App.store.saveNow());
     document.addEventListener('visibilitychange', () => { if (document.hidden) App.store.saveNow(); });
 

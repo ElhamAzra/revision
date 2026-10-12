@@ -98,7 +98,7 @@
     for (let i = 13; i >= 0; i--) days.push(U.addDays(U.dayKey(), -i));
     const maxXp = Math.max(1, ...days.map((d) => (st.daily[d] || {}).xp || 0));
     const v = App.ui.mount(`
-      <div class="page-head"><h1>👤 Profil</h1></div>
+      <div class="page-head"><h1>👤 Profil & réglages</h1></div>
       <div class="card pad-lg">
         <div class="row nowrap">
           ${App.ui.ring(L.pct, 96, 9, 'var(--primary)', `${L.level}<small>niveau</small>`)}
@@ -106,7 +106,7 @@
           <div class="row mt1"><span class="chip acc">🔥 série ${App.game.streakNow()} j (record ${st.streak.best})</span><span class="chip ok">${Object.keys(st.badges).length}/${App.game.BADGES.length} badges</span></div></div>
         </div>
       </div>
-      <div class="grid c4 mt2">
+      <div class="grid k4 mt2">
         <div class="card kpi"><span class="ico">✅</span><div><div class="v">${U.fmtNum(tot.answered)}</div><div class="l">réponses</div></div></div>
         <div class="card kpi"><span class="ico">🎯</span><div><div class="v">${tot.answered ? Math.round((tot.correct / tot.answered) * 100) : 0} %</div><div class="l">de réussite</div></div></div>
         <div class="card kpi"><span class="ico">📖</span><div><div class="v">${tot.lessons}/${App.content.lessonCount()}</div><div class="l">leçons</div></div></div>
@@ -119,14 +119,20 @@
       <h2 class="mt3">🏅 Badges</h2>
       <div class="badge-grid">${App.game.BADGES.map((b) => `<div class="bdg ${st.badges[b.id] ? '' : 'off'}"><div class="e">${b.e}</div><div class="n">${b.n}</div><div class="d">${b.d}</div></div>`).join('')}</div>
       <h2 class="mt3">⚙️ Réglages</h2>
-      <div class="card stack">
+      <div class="card stack" id="typoBox">
+        <h3 class="mb0">🎨 Affichage et lecture</h3>
+        ${App.ui.typoControls()}
+        <div class="row"><span class="set-lbl">Menu sur ordinateur :</span><div class="seg" id="sNav">${[['auto', 'Automatique'], ['full', 'Complet'], ['rail', 'Replié (icônes)']].map(([k, l]) => `<button data-n="${k}" class="${(st.settings.nav || 'auto') === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+        <div class="row"><span class="set-lbl">Thème :</span><div class="seg" id="sTheme">${[['auto', '🌗 Auto'], ['light', '☀️ Clair'], ['dark', '🌙 Sombre']].map(([k, l]) => `<button data-t="${k}" class="${st.settings.theme === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+        ${App.ui.fullscreen.supported() ? '<div class="row"><span class="set-lbl">Plein écran :</span><button class="btn sm" id="sFs">⛶ Activer / quitter (touche F)</button></div>' : ''}
+      </div>
+      <div class="card stack mt2">
         <div class="grid c2">
           <div><label class="lbl">Ton prénom (affiché sur l'accueil)</label><input class="input" id="sName" value="${U.esc(st.settings.name)}"></div>
           <div><label class="lbl">Date du concours</label><input class="input" type="date" id="sDate" value="${st.settings.examDate}"></div>
           <div><label class="lbl">Objectif quotidien (XP)</label><select class="input" id="sGoal">${[100, 150, 200, 300, 400, 600].map((x) => `<option ${x === st.settings.dailyGoal ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
           <div><label class="lbl">Nouvelles cartes par session</label><select class="input" id="sNew">${[10, 15, 20, 30, 50].map((x) => `<option ${x === st.settings.newCardsPerSession ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
         </div>
-        <div class="row"><span class="small" style="font-weight:700">Thème :</span><div class="seg" id="sTheme">${[['auto', '🌗 Auto'], ['light', '☀️ Clair'], ['dark', '🌙 Sombre']].map(([k, l]) => `<button data-t="${k}" class="${st.settings.theme === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
         <label class="switch"><input type="checkbox" id="sSound" ${st.settings.sound ? 'checked' : ''}> Sons de réussite / erreur</label>
       </div>
       <h2 class="mt3">💾 Ma progression</h2>
@@ -142,6 +148,10 @@
     v.querySelector('#sNew').addEventListener('change', (e) => set('newCardsPerSession', +e.target.value));
     v.querySelector('#sSound').addEventListener('change', (e) => { set('sound', e.target.checked); if (e.target.checked) App.fx.sound('ok'); });
     U.$$('#sTheme button').forEach((b) => b.addEventListener('click', () => { set('theme', b.dataset.t); App.ui.applyTheme(); U.$$('#sTheme button').forEach((x) => x.classList.toggle('on', x === b)); }));
+    App.ui.bindTypo(v.querySelector('#typoBox'));
+    U.$$('#sNav button').forEach((b) => b.addEventListener('click', () => { set('nav', b.dataset.n); App.layout.applyNav(); U.$$('#sNav button').forEach((x) => x.classList.toggle('on', x === b)); }));
+    const fsb = v.querySelector('#sFs');
+    if (fsb) fsb.addEventListener('click', () => App.ui.fullscreen.toggle());
     v.querySelector('#exp').addEventListener('click', () => {
       const blob = new Blob([App.store.exportJSON()], { type: 'application/json' });
       const a = document.createElement('a');

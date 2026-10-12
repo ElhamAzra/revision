@@ -44,12 +44,16 @@
       return;
     }
     const v = App.ui.mount(`
-      ${App.ui.crumbs([['Cartes', '#/cartes'], ['Session']])}
-      <div class="page-head"><h1>${title}</h1></div>
-      <div class="quiz-top"><span class="small muted nowrap" id="cCount"></span>${App.ui.bar(0)}<button class="btn sm ghost" id="cEnd">Terminer</button></div>
-      <div id="cHost"></div>`);
+      <div class="focus-head">
+        <a class="fh-close" href="#/cartes" title="Quitter (Échap)" aria-label="Quitter">✕</a>
+        <div class="fh-mid"><div class="fh-title">${title}</div>${App.ui.bar(0, 'fh-bar ok')}</div>
+        <span class="fh-count" id="cCount"></span>
+        <button class="btn sm ghost" id="cEnd">Terminer</button>
+      </div>
+      <div id="cHost" class="focus-body"></div>`, { focus: true });
+    App.layout.setBack('#/cartes');
     const host = v.querySelector('#cHost');
-    const bar = v.querySelector('.bar > i');
+    const bar = v.querySelector('.fh-bar > i');
     v.querySelector('#cEnd').addEventListener('click', end);
 
     function show() {
@@ -125,6 +129,7 @@
 
     function end() {
       App.router.onLeave(() => {});
+      App.ui.setFocus(false);
       bar.style.width = '100%';
       App.fx.sound('end');
       if (reviewed >= 10) App.fx.confetti(0.6);
@@ -139,7 +144,8 @@
     App.ui.keys({
       ' ': (e) => { e.preventDefault(); doFlip(); },
       Enter: (e) => { if (!flipped) { e.preventDefault(); doFlip(); } },
-      1: () => rate(0), 2: () => rate(1), 3: () => rate(2), 4: () => rate(3)
+      1: () => rate(0), 2: () => rate(1), 3: () => rate(2), 4: () => rate(3),
+      Escape: () => { if (!document.querySelector('.modal-bg')) location.hash = '#/cartes'; }
     });
     show();
   }
