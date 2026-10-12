@@ -24,7 +24,7 @@ La version **en ligne** s'installe sur l'écran d'accueil et fonctionne ensuite 
 - **iPhone / iPad** (Safari) : bouton Partager → « Sur l'écran d'accueil ».
 - **Ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
 
-**Version en ligne** : **https://revision-app-zeta.vercel.app** (hébergée gratuitement sur Vercel, dépôt public ou privé). Chaque mise à jour de `main` est publiée automatiquement ; la configuration est dans `vercel.json` (construction du fichier unique, dossier publié `app/`, en-têtes du service worker). Le fichier unique est aussi disponible à `https://revision-app-zeta.vercel.app/revision-concours-mef.html`. Si l'adresse change, mettre à jour `App.ONLINE_URL` dans `app/js/core/util.js`.
+**Version en ligne** : **https://revision-app-zeta.vercel.app** (hébergée gratuitement sur Vercel, dépôt public ou privé). Chaque mise à jour de `main` est publiée automatiquement ; la configuration est dans `vercel.json` (dossier publié `app/`, en-têtes du service worker ; aucune étape de build : lancer `python3 tools/build_single.py` avant de committer). Le fichier unique est aussi disponible à `https://revision-app-zeta.vercel.app/revision-concours-mef.html`. Si l'adresse change, mettre à jour `App.ONLINE_URL` dans `app/js/core/util.js`.
 
 ## Confort d'utilisation
 
