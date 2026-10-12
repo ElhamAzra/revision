@@ -141,6 +141,7 @@
         </div>
         <label class="switch"><input type="checkbox" id="sSound" ${st.settings.sound ? 'checked' : ''}> Sons de réussite / erreur</label>
       </div>
+      <div class="mt3" id="instBox">${App.install.card()}</div>
       <h2 class="mt3">💾 Sauvegarde de ma progression</h2>
       <div class="card stack" id="bkBox">
         <p class="small muted mb0">${App.store.persistent ? 'Ta progression est enregistrée automatiquement dans ce navigateur, sur cet appareil.' : '⚠️ Le stockage local est bloqué dans ce navigateur : télécharge une sauvegarde à la fin de chaque séance.'} Une <b>sauvegarde en fichier</b> te protège si le navigateur est nettoyé, et permet de passer du PC au téléphone (et inversement).</p>
@@ -164,6 +165,7 @@
     if (fsb) fsb.addEventListener('click', () => App.ui.fullscreen.toggle());
     v.querySelector('#exp').addEventListener('click', () => { App.backup.download(); v.querySelector('.bk-status b').textContent = App.backup.lastLabel(); });
     v.querySelector('#imp').addEventListener('click', () => App.backup.pick());
+    App.install.bind(v.querySelector('#instBox'));
     App.backup.bindEvery(v.querySelector('#bkBox'));
     v.querySelector('#tourAgain').addEventListener('click', () => App.tour.start());
     v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.ui.applyTypo(); App.layout.applyNav(); App.layout.refresh(); R.go('/'); setTimeout(App.home.onboard, 300); }, true));
@@ -207,7 +209,10 @@
           </ul>
         </div>
       </div>
+      <div class="mt2" id="instBox">${App.install.card()}</div>
+      ${App.install.online ? '<div class="card mt2"><h3>📦 Fichier unique hors ligne</h3><p class="small muted">Toute l\'application dans un seul fichier, à envoyer par WhatsApp ou clé USB (il s\'ouvre sans Internet).</p><a class="btn" href="revision-concours-mef.html" download>⬇️ Télécharger revision-concours-mef.html</a></div>' : ''}
       <p class="center small muted mt3">© ${new Date().getFullYear()} ${D.name} · Fait avec ❤️ pour les candidats du concours MEF.</p>`);
+    App.install.bind(document.getElementById('instBox'));
   });
 
   /* ---------- Mode d'emploi ---------- */
@@ -252,7 +257,7 @@
       ${sec('faq', '❔ Questions fréquentes', `
         <details class="aide-tool"><summary>Faut-il Internet ?</summary><div class="prose"><p>Non. Tout est dans le fichier : cours, exercices, polices, examens. Seuls les liens externes (WhatsApp, e-mail) en ont besoin.</p></div></details>
         <details class="aide-tool"><summary>J'ai perdu ma progression !</summary><div class="prose"><p>Elle est liée au navigateur et à l'appareil. Si tu as une sauvegarde, restaure-la (Profil → Restaurer). Sinon, vérifie que tu ouvres le même fichier avec le même navigateur (pas en navigation privée).</p></div></details>
-        <details class="aide-tool"><summary>Ça marche sur iPhone ?</summary><div class="prose"><p>L'aperçu de l'app Fichiers n'exécute pas l'application : ouvre le fichier avec une app comme <i>Documents</i> (Readdle), ou utilise la version installable en ligne si elle est disponible (Profil → Installer).</p></div></details>
+        <details class="aide-tool"><summary>Comment l'installer sur Android, iPhone ou ordinateur ?</summary><div class="prose"><p>Ouvre une fois la version en ligne (<b>${App.ONLINE_URL}</b>) avec Internet, puis : <b>Android</b> → bouton « Installer » (Profil) ou menu ⋮ → « Installer l'application » ; <b>iPhone</b> → Safari, bouton Partager → « Sur l'écran d'accueil » ; <b>ordinateur</b> (Chrome, Edge) → icône d'installation dans la barre d'adresse. Ensuite, l'application fonctionne <b>sans Internet</b>. Le fichier unique, lui, s'ouvre directement mais ne s'installe pas (sur iPhone, l'aperçu de Fichiers ne le lance pas : utilise une app comme <i>Documents</i>).</p></div></details>
         <details class="aide-tool"><summary>Les réponses à saisir : quel format ?</summary><div class="prose"><p>Adresses : 192.168.1.0 ; préfixes : /26 ou 26 selon le champ ; nombres à la française acceptés (1 022 ; 9,97) ; binaire sur 8 bits (11000000) ; IPv6 compressée ou complète selon la consigne.</p></div></details>
         <details class="aide-tool"><summary>Le texte est trop petit / la police ne me plaît pas</summary><div class="prose"><p>Profil → Affichage et lecture : 3 polices (Nunito, Lexend, système) et 4 tailles de texte ; thème clair ou sombre.</p></div></details>
         <details class="aide-tool"><summary>J'ai trouvé une erreur dans un cours</summary><div class="prose"><p>Signale-la au développeur (page <a href="#/apropos">À propos</a>) : e-mail ou WhatsApp. Merci !</p></div></details>`)}

@@ -1,12 +1,28 @@
 {
+  "id": "./",
   "name": "Révision Concours MEF — Systèmes & Réseaux",
   "short_name": "Révision MEF",
+  "description": "Révision hors ligne du concours MEF Niger, option Systèmes & Réseaux : cours, cartes, exercices infinis, examens blancs.",
   "lang": "fr",
-  "start_url": "./index.html",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0b0e1d",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f4f5fb",
   "theme_color": "#5b4bff",
+  "categories": ["education", "productivity"],
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Séance guidée", "short_name": "Séance", "url": "./#/seance", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Cartes mémoire", "short_name": "Cartes", "url": "./#/cartes?go=1", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Défi entre amis", "short_name": "Défi", "url": "./#/defi", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Examen blanc", "short_name": "Examen", "url": "./#/examen", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

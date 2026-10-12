@@ -90,6 +90,7 @@
       </section>
 
       ${App.backup.reminderHtml() ? '<div class="mt2">' + App.backup.reminderHtml() + '</div>' : ''}
+      ${App.install.banner() ? '<div class="mt2">' + App.install.banner() + '</div>' : ''}
       <div class="grid k4 mt2">
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico">⭐</span><div><div class="v">Niv. ${L.level}</div><div class="l">${L.title}</div></div></a>
         <a class="card hover kpi" href="#/profil" style="color:inherit;text-decoration:none"><span class="ico"><span class="flame">🔥</span></span><div><div class="v acc-t">${streak} j</div><div class="l">série (record ${st.streak.best})</div></div></a>
@@ -126,6 +127,7 @@
       </a>
     `);
     App.backup.bindReminder(App.ui.root());
+    App.install.bindBanner(App.ui.root());
   });
 
   function modCard(m, today) {

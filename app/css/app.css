@@ -638,6 +638,11 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
   .blanc-bar .timer { font-size: 1rem; padding: .2rem .5rem; }
 }
 
+/* Installation */
+.install-url { padding: .5rem .8rem; border-radius: 10px; background: var(--surface-3); font-weight: 700; overflow-wrap: anywhere; }
+.kbdish { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 6px; border: 1px solid var(--border-strong); font-size: .8rem; }
+.update-bar { position: fixed; z-index: 120; left: 50%; transform: translateX(-50%); top: calc(.8rem + env(safe-area-inset-top)); display: flex; gap: .7rem; align-items: center; padding: .5rem .6rem .5rem 1rem; border-radius: 16px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-weight: 700; animation: slideUp .3s ease; }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);

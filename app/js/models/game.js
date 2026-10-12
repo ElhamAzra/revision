@@ -16,6 +16,7 @@
     { id: 'first', e: '🌱', n: 'Premiers pas', d: 'Première bonne réponse' },
     { id: 'guided', e: '🧭', n: 'Sur les rails', d: 'Terminer une séance guidée' },
     { id: 'defi', e: '⚔️', n: 'Duelliste', d: 'Gagner un défi entre amis' },
+    { id: 'installed', e: '📲', n: 'Toujours sur moi', d: 'Installer l\'application sur l\'écran d\'accueil' },
     { id: 'goal1', e: '🎯', n: 'Objectif atteint', d: 'Atteindre l\'objectif du jour' },
     { id: 'streak3', e: '🔥', n: 'En feu', d: '3 jours d\'objectif d\'affilée' },
     { id: 'streak7', e: '☄️', n: 'Inarrêtable', d: '7 jours d\'objectif d\'affilée' },

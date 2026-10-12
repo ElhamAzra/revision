@@ -12,6 +12,8 @@
     phone: '+22799008767',
     phoneDisplay: '+227 99 00 87 67'
   };
+  /* Adresse de la version en ligne installable (GitHub Pages) */
+  App.ONLINE_URL = 'https://elhamazra.github.io/revision/';
 
   const U = (App.util = {});
 

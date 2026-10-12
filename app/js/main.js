@@ -18,10 +18,8 @@
     window.addEventListener('beforeunload', () => App.store.saveNow());
     document.addEventListener('visibilitychange', () => { if (document.hidden) App.store.saveNow(); });
 
-    // Mode application installable quand la page est servie en http(s) (ex. GitHub Pages) : cache hors ligne.
-    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !/localhost|127\.0\.0\.1/.test(location.hostname)) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
+    // Version en ligne (ex. GitHub Pages) : cache hors ligne complet, installation, mises à jour.
+    App.install.registerSW();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

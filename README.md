@@ -16,6 +16,16 @@ Au **premier lancement**, un court assistant demande ton prénom, ta date de con
 
 **Sauvegarde** : la progression (XP, cartes, erreurs, badges, réglages) est enregistrée automatiquement dans le navigateur. Pour ne rien perdre et changer d'appareil, clique sur **💾** (menu) ou **Profil → Sauvegarder maintenant** : un fichier `sauvegarde-revision-mef-<prénom>-<date>.json` est téléchargé. Sur l'autre appareil, choisis **« J'ai déjà une sauvegarde »** à l'ouverture, ou **Profil → Restaurer une sauvegarde** (ou glisse le fichier sur la fenêtre, sur ordinateur). Un aperçu (niveau, XP, leçons, date) s'affiche avant de confirmer. L'application rappelle de sauvegarder (tous les jours, 3 jours, chaque semaine ou jamais).
 
+## Installer l'application (Android, iPhone, ordinateur)
+
+La version **en ligne** s'installe sur l'écran d'accueil et fonctionne ensuite **sans Internet** (tous les fichiers sont mis en cache) :
+
+- **Android** (Chrome, Edge, Samsung Internet) : bouton « 📲 Installer l'application » (accueil ou Profil), ou menu ⋮ → « Installer l'application ».
+- **iPhone / iPad** (Safari) : bouton Partager → « Sur l'écran d'accueil ».
+- **Ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
+
+**Mise en ligne avec GitHub Pages** (une seule fois) : le dépôt doit être **public** (ou compte GitHub payant pour un dépôt privé). Puis *Settings → Pages → Build and deployment → Source : GitHub Actions*. À chaque mise à jour de `main`, le workflow `.github/workflows/pages.yml` publie le dossier `app/` à l'adresse `https://elhamazra.github.io/revision/` (et le fichier unique à `…/revision-concours-mef.html`). Alternative sans rendre le dépôt public : glisser le dossier `app/` sur [Netlify Drop](https://app.netlify.com/drop) (gratuit) et remplacer `App.ONLINE_URL` dans `app/js/core/util.js` par l'adresse obtenue.
+
 ## Confort d'utilisation
 
 - **S'adapte à tous les écrans** : menu latéral complet sur grand écran (repliable en icônes), rail d'icônes sur écran moyen ou téléphone en paysage, barre d'onglets en bas sur téléphone. Le contenu occupe toute la largeur disponible.
@@ -51,7 +61,7 @@ app/
 ├── js/generators/        générateurs d'exercices
 ├── js/controllers/       écrans (accueil, cours, cartes, entraînement, examens…)
 └── data/                 contenu pédagogique (un fichier par séance)
-tools/build_single.py     fabrique revision-concours-mef.html (tout en un)
+tools/build_single.py     fabrique revision-concours-mef.html (tout en un) et régénère app/sw.js (cache hors ligne)
 ```
 
 Régénérer la version un seul fichier après une modification : `python3 tools/build_single.py`.
