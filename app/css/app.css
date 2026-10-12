@@ -1182,9 +1182,47 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
+/* Fiches imprimables : aperçu à l'écran */
+.pick { display: flex; gap: .55rem; align-items: center; padding: .35rem 0; font-weight: 600; cursor: pointer; }
+.pick input, .chip-pick input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary); }
+.chip-pick { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .65rem; border-radius: 99px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; font-size: .85rem; font-weight: 600; }
+.chip-pick:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.print-doc { margin-top: 1.5rem; background: #fff; color: #111; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); font-size: .92rem; line-height: 1.45; }
+.print-doc h1 { font-size: 1.4rem; margin: 0; color: #111; }
+.print-doc h2 { font-size: 1.2rem; color: #111; border-bottom: 3px solid var(--mc, #5b4bff); padding-bottom: .25rem; margin: 0 0 .3rem; }
+.print-doc h3 { font-size: .98rem; margin: .8rem 0 .25rem; color: #222; }
+.print-doc table.t th { background: #f1f1f6; color: #333; }
+.print-doc .co { background: #f7f7fb !important; border: 1px solid #ddd !important; padding: .4rem .6rem; margin: .4rem 0; }
+.pd-cover { display: flex; gap: 1rem; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: .8rem; margin-bottom: 1rem; }
+.pd-cover p { margin: .2rem 0 0; color: #555; font-size: .85rem; }
+.pd-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #5b4bff, #ff7a1a); color: #fff; display: grid; place-items: center; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pd-mod { margin-bottom: 1.6rem; }
+.pd-sub { color: #666; font-size: .82rem; margin-bottom: .5rem; }
+.pd-ess { columns: 2 320px; column-gap: 1.6rem; }
+.pd-lesson { break-inside: avoid; margin-bottom: .6rem; }
+.pd-lesson ul, .pd-lesson ol { margin: .2rem 0 .4rem; padding-left: 1.1rem; }
+.pd-phr { break-inside: avoid; background: #f6f5ff; border-radius: 8px; padding: .4rem .8rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pd-cardgrid { display: grid; grid-template-columns: 1fr; gap: 0; }
+.pd-card { display: grid; grid-template-columns: 1fr 1fr; border: 1px dashed #999; border-bottom: 0; break-inside: avoid; }
+.pd-card:last-child { border-bottom: 1px dashed #999; }
+.pd-front, .pd-back { padding: .5rem .7rem; min-height: 3.2rem; }
+.pd-front { font-weight: 700; border-right: 1px dashed #bbb; }
+.pd-q > li { margin-bottom: .45rem; break-inside: avoid; }
+.pd-corr { margin: .3rem 0 .2rem; padding: .3rem .6rem; border-left: 3px solid #10a861; background: #f3fbf6; font-size: .88em; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.print-doc .bits b { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@media (max-width: 600px) { .print-doc { padding: 1rem; } .pd-card { grid-template-columns: 1fr; } .pd-front { border-right: 0; border-bottom: 1px dashed #bbb; } }
+
 @media print {
-  .sidebar, .topbar, .bottombar, .toasts, .q-actions, .btn { display: none !important; }
+  @page { margin: 12mm; }
+  .sidebar, .topbar, .bottombar, .toasts, .q-actions, .btn, .no-print, .help-btn, .coach, .tts-bar, .lesson-aside, .lesson-dock, .read-progress, .focus-head, .modal-bg, .tour { display: none !important; }
   .shell { display: block; }
-  body { background: #fff; }
-  .view { max-width: none; padding: 0; }
+  body { background: #fff !important; color: #111; font-size: 11pt; }
+  .view { max-width: none !important; padding: 0 !important; }
+  .card { box-shadow: none !important; break-inside: avoid; }
+  .print-doc { margin: 0; padding: 0; box-shadow: none; border-radius: 0; font-size: 10pt; }
+  .pd-mod { break-before: page; }
+  .pd-mod:first-of-type { break-before: auto; }
+  .pd-card { grid-template-columns: 1fr 1fr !important; }
+  a { color: inherit; text-decoration: none; }
 }
+

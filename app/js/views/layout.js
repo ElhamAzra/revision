@@ -26,6 +26,7 @@
     { sep: 'Mémo' },
     { href: '#/veille', ico: '🌙', label: 'Veille du concours', match: /^\/veille/ },
     { href: '#/fiche', ico: '⚡', label: 'Fiche dernière heure', match: /^\/fiche/ },
+    { href: '#/imprimer', ico: '🖨️', label: 'Fiches imprimables', match: /^\/imprimer/ },
     { href: '#/glossaire', ico: '🔤', label: 'Glossaire', match: /^\/glossaire/ },
     { href: '#/recherche', ico: '🔎', label: 'Recherche', match: /^\/recherche/ },
     { href: '#/profil', ico: '👤', label: 'Profil & réglages', match: /^\/profil/ },
@@ -37,7 +38,7 @@
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs|preparation|defi)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide|veille)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide|veille|imprimer)/ }
   ];
 
   let back = null;

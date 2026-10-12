@@ -260,4 +260,59 @@
     document.getElementById('tourBtn').addEventListener('click', () => App.tour.start());
     U.$$('[data-to]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); const t = document.getElementById(a.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
   });
+
+  /* ---------- Fiches imprimables / PDF ---------- */
+  R.add('/imprimer', (p, query) => {
+    App.layout.setTitle('Fiches imprimables');
+    const mods = App.content.modules.filter((m) => m.lessons.length);
+    const blancs = App.content.extras.examBlancs || [];
+    const st = App.store.state.settings;
+    const pr = (st.print = st.print || { parts: { ess: true, phr: true, cards: false, fiche: true, blanc: false, corr: false }, mods: mods.map((m) => m.id) });
+    const v = App.ui.mount(`
+      <div class="page-head no-print"><h1>🖨️ Fiches imprimables</h1><div class="sub">Choisis ce que tu veux imprimer ou enregistrer en PDF, puis touche « Imprimer ». Sur téléphone : choisis l'imprimante <b>« Enregistrer au format PDF »</b>.</div></div>
+      <div class="card no-print print-opts">
+        <div class="grid c2">
+          <div><div class="set-lbl mb1">Contenu</div>
+            ${[['ess', '⚡ L\'essentiel de chaque leçon'], ['phr', '🗣️ Les 5 phrases de chaque séance'], ['cards', '🃏 Cartes mémoire recto / verso (à découper et plier)'], ['fiche', '⚡ Fiche dernière heure + réflexes du jour J'], ['blanc', '📄 Sujets blancs (énoncés)'], ['corr', '✅ … avec leurs corrigés']].map(([k, l]) => `<label class="pick"><input type="checkbox" data-part="${k}" ${pr.parts[k] ? 'checked' : ''}> ${l}</label>`).join('')}
+          </div>
+          <div><div class="set-lbl mb1">Séances</div>
+            <div class="row" style="gap:.4rem">${mods.map((m) => `<label class="chip-pick"><input type="checkbox" data-mod="${m.id}" ${pr.mods.includes(m.id) ? 'checked' : ''}><span>${m.icon} ${m.short || m.title}</span></label>`).join('')}</div>
+            <div class="row mt1"><button class="btn sm ghost" data-all="1">Tout</button><button class="btn sm ghost" data-all="0">Aucune</button></div>
+          </div>
+        </div>
+        <div class="row mt2"><button class="btn primary lg" id="doPrint">🖨️ Imprimer / PDF</button><span class="small muted" id="pInfo"></span></div>
+      </div>
+      <div class="print-doc" id="doc"></div>`, { wide: true });
+    const doc = v.querySelector('#doc');
+    function render() {
+      const sel = mods.filter((m) => pr.mods.includes(m.id));
+      let html = `<header class="pd-cover"><div class="pd-logo">IP</div><div><h1>Révision Concours MEF — Systèmes &amp; Réseaux</h1><p>Fiches de révision${App.backup.name() ? ' de ' + App.backup.name() : ''} · imprimé le ${new Date().toLocaleDateString('fr-FR')} · ${App.DEV.name}</p></div></header>`;
+      let pages = 0;
+      sel.forEach((m) => {
+        const parts = [];
+        if (pr.parts.ess) parts.push(`<div class="pd-ess">${m.lessons.map((l) => `<section class="pd-lesson"><h3>${l.idx + 1}. ${l.title}</h3>${l.essentiel || ''}</section>`).join('')}</div>`);
+        if (pr.parts.phr && m.phrases.length) parts.push(`<section class="pd-phr"><h3>🗣️ Les 5 phrases à savoir réciter</h3><ol>${m.phrases.map((ph) => `<li>${ph}</li>`).join('')}</ol></section>`);
+        if (pr.parts.cards && m.cards.length) parts.push(`<section class="pd-cards"><h3>🃏 Cartes mémoire — découper selon les pointillés, plier au milieu</h3><div class="pd-cardgrid">${m.cards.map((c) => `<div class="pd-card"><div class="pd-front">${c.front}</div><div class="pd-back">${c.back}</div></div>`).join('')}</div></section>`);
+        if (!parts.length) return;
+        pages++;
+        html += `<article class="pd-mod" style="--mc:${m.color}"><h2>${m.icon} ${m.label} — ${m.title}</h2>${m.day ? `<div class="pd-sub">${U.fmtDay(m.day)}${m.epreuve ? ' · ' + m.epreuve : ''}</div>` : ''}${parts.join('')}</article>`;
+      });
+      if (pr.parts.fiche && App.content.extras.fiche) {
+        pages++;
+        html += `<article class="pd-mod"><h2>⚡ Fiche « dernière heure »</h2>${App.content.extras.fiche.map((s) => `<section class="pd-lesson"><h3>${s.title}</h3>${s.html}</section>`).join('')}${App.content.extras.reflexes ? `<section class="pd-phr"><h3>🧭 Le jour J</h3><ol>${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></section>` : ''}</article>`;
+      }
+      if (pr.parts.blanc) blancs.forEach((b) => {
+        pages++;
+        html += `<article class="pd-mod pd-exam"><h2>📄 ${b.title}</h2><div class="pd-sub">${b.sub}</div>${b.context}${b.sections.map((s) => `<h3>${s.title} (${s.max} points)</h3><ol class="pd-q">${s.items.map((it) => `<li>${it.q} <i>(${U.fmtNum(it.pts)} pt${it.pts > 1 ? 's' : ''})</i>${pr.parts.corr ? `<div class="pd-corr"><b>Corrigé :</b> ${it.corr}</div>` : ''}</li>`).join('')}</ol>`).join('')}</article>`;
+      });
+      doc.innerHTML = pages ? html : '<p class="muted center">Rien à imprimer : coche au moins un contenu et une séance.</p>';
+      v.querySelector('#pInfo').textContent = pages ? `${pages} partie${pages > 1 ? 's' : ''} · aperçu ci-dessous` : '';
+      App.store.save();
+    }
+    U.$$('[data-part]', v).forEach((c) => c.addEventListener('change', () => { pr.parts[c.dataset.part] = c.checked; if (c.dataset.part === 'corr' && c.checked) { pr.parts.blanc = true; v.querySelector('[data-part="blanc"]').checked = true; } render(); }));
+    U.$$('[data-mod]', v).forEach((c) => c.addEventListener('change', () => { pr.mods = U.$$('[data-mod]', v).filter((x) => x.checked).map((x) => x.dataset.mod); render(); }));
+    U.$$('[data-all]', v).forEach((b) => b.addEventListener('click', () => { U.$$('[data-mod]', v).forEach((x) => (x.checked = b.dataset.all === '1')); pr.mods = b.dataset.all === '1' ? mods.map((m) => m.id) : []; render(); }));
+    v.querySelector('#doPrint').addEventListener('click', () => window.print());
+    render();
+  });
 })();

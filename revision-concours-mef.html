@@ -1200,12 +1200,50 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
+/* Fiches imprimables : aperçu à l'écran */
+.pick { display: flex; gap: .55rem; align-items: center; padding: .35rem 0; font-weight: 600; cursor: pointer; }
+.pick input, .chip-pick input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary); }
+.chip-pick { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .65rem; border-radius: 99px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; font-size: .85rem; font-weight: 600; }
+.chip-pick:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.print-doc { margin-top: 1.5rem; background: #fff; color: #111; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); font-size: .92rem; line-height: 1.45; }
+.print-doc h1 { font-size: 1.4rem; margin: 0; color: #111; }
+.print-doc h2 { font-size: 1.2rem; color: #111; border-bottom: 3px solid var(--mc, #5b4bff); padding-bottom: .25rem; margin: 0 0 .3rem; }
+.print-doc h3 { font-size: .98rem; margin: .8rem 0 .25rem; color: #222; }
+.print-doc table.t th { background: #f1f1f6; color: #333; }
+.print-doc .co { background: #f7f7fb !important; border: 1px solid #ddd !important; padding: .4rem .6rem; margin: .4rem 0; }
+.pd-cover { display: flex; gap: 1rem; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: .8rem; margin-bottom: 1rem; }
+.pd-cover p { margin: .2rem 0 0; color: #555; font-size: .85rem; }
+.pd-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #5b4bff, #ff7a1a); color: #fff; display: grid; place-items: center; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pd-mod { margin-bottom: 1.6rem; }
+.pd-sub { color: #666; font-size: .82rem; margin-bottom: .5rem; }
+.pd-ess { columns: 2 320px; column-gap: 1.6rem; }
+.pd-lesson { break-inside: avoid; margin-bottom: .6rem; }
+.pd-lesson ul, .pd-lesson ol { margin: .2rem 0 .4rem; padding-left: 1.1rem; }
+.pd-phr { break-inside: avoid; background: #f6f5ff; border-radius: 8px; padding: .4rem .8rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pd-cardgrid { display: grid; grid-template-columns: 1fr; gap: 0; }
+.pd-card { display: grid; grid-template-columns: 1fr 1fr; border: 1px dashed #999; border-bottom: 0; break-inside: avoid; }
+.pd-card:last-child { border-bottom: 1px dashed #999; }
+.pd-front, .pd-back { padding: .5rem .7rem; min-height: 3.2rem; }
+.pd-front { font-weight: 700; border-right: 1px dashed #bbb; }
+.pd-q > li { margin-bottom: .45rem; break-inside: avoid; }
+.pd-corr { margin: .3rem 0 .2rem; padding: .3rem .6rem; border-left: 3px solid #10a861; background: #f3fbf6; font-size: .88em; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.print-doc .bits b { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@media (max-width: 600px) { .print-doc { padding: 1rem; } .pd-card { grid-template-columns: 1fr; } .pd-front { border-right: 0; border-bottom: 1px dashed #bbb; } }
+
 @media print {
-  .sidebar, .topbar, .bottombar, .toasts, .q-actions, .btn { display: none !important; }
+  @page { margin: 12mm; }
+  .sidebar, .topbar, .bottombar, .toasts, .q-actions, .btn, .no-print, .help-btn, .coach, .tts-bar, .lesson-aside, .lesson-dock, .read-progress, .focus-head, .modal-bg, .tour { display: none !important; }
   .shell { display: block; }
-  body { background: #fff; }
-  .view { max-width: none; padding: 0; }
+  body { background: #fff !important; color: #111; font-size: 11pt; }
+  .view { max-width: none !important; padding: 0 !important; }
+  .card { box-shadow: none !important; break-inside: avoid; }
+  .print-doc { margin: 0; padding: 0; box-shadow: none; border-radius: 0; font-size: 10pt; }
+  .pd-mod { break-before: page; }
+  .pd-mod:first-of-type { break-before: auto; }
+  .pd-card { grid-template-columns: 1fr 1fr !important; }
+  a { color: inherit; text-decoration: none; }
 }
+
 
 </style>
 </head>
@@ -2698,6 +2736,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     { sep: 'Mémo' },
     { href: '#/veille', ico: '🌙', label: 'Veille du concours', match: /^\/veille/ },
     { href: '#/fiche', ico: '⚡', label: 'Fiche dernière heure', match: /^\/fiche/ },
+    { href: '#/imprimer', ico: '🖨️', label: 'Fiches imprimables', match: /^\/imprimer/ },
     { href: '#/glossaire', ico: '🔤', label: 'Glossaire', match: /^\/glossaire/ },
     { href: '#/recherche', ico: '🔎', label: 'Recherche', match: /^\/recherche/ },
     { href: '#/profil', ico: '👤', label: 'Profil & réglages', match: /^\/profil/ },
@@ -2709,7 +2748,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs|preparation|defi)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide|veille)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide|veille|imprimer)/ }
   ];
 
   let back = null;
@@ -12359,6 +12398,61 @@ done < /root/nouveaux.txt`) + '<p>Barème : boucle de lecture (0,5), test d\'exi
       </div>`, { narrow: true });
     document.getElementById('tourBtn').addEventListener('click', () => App.tour.start());
     U.$$('[data-to]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); const t = document.getElementById(a.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+  });
+
+  /* ---------- Fiches imprimables / PDF ---------- */
+  R.add('/imprimer', (p, query) => {
+    App.layout.setTitle('Fiches imprimables');
+    const mods = App.content.modules.filter((m) => m.lessons.length);
+    const blancs = App.content.extras.examBlancs || [];
+    const st = App.store.state.settings;
+    const pr = (st.print = st.print || { parts: { ess: true, phr: true, cards: false, fiche: true, blanc: false, corr: false }, mods: mods.map((m) => m.id) });
+    const v = App.ui.mount(`
+      <div class="page-head no-print"><h1>🖨️ Fiches imprimables</h1><div class="sub">Choisis ce que tu veux imprimer ou enregistrer en PDF, puis touche « Imprimer ». Sur téléphone : choisis l'imprimante <b>« Enregistrer au format PDF »</b>.</div></div>
+      <div class="card no-print print-opts">
+        <div class="grid c2">
+          <div><div class="set-lbl mb1">Contenu</div>
+            ${[['ess', '⚡ L\'essentiel de chaque leçon'], ['phr', '🗣️ Les 5 phrases de chaque séance'], ['cards', '🃏 Cartes mémoire recto / verso (à découper et plier)'], ['fiche', '⚡ Fiche dernière heure + réflexes du jour J'], ['blanc', '📄 Sujets blancs (énoncés)'], ['corr', '✅ … avec leurs corrigés']].map(([k, l]) => `<label class="pick"><input type="checkbox" data-part="${k}" ${pr.parts[k] ? 'checked' : ''}> ${l}</label>`).join('')}
+          </div>
+          <div><div class="set-lbl mb1">Séances</div>
+            <div class="row" style="gap:.4rem">${mods.map((m) => `<label class="chip-pick"><input type="checkbox" data-mod="${m.id}" ${pr.mods.includes(m.id) ? 'checked' : ''}><span>${m.icon} ${m.short || m.title}</span></label>`).join('')}</div>
+            <div class="row mt1"><button class="btn sm ghost" data-all="1">Tout</button><button class="btn sm ghost" data-all="0">Aucune</button></div>
+          </div>
+        </div>
+        <div class="row mt2"><button class="btn primary lg" id="doPrint">🖨️ Imprimer / PDF</button><span class="small muted" id="pInfo"></span></div>
+      </div>
+      <div class="print-doc" id="doc"></div>`, { wide: true });
+    const doc = v.querySelector('#doc');
+    function render() {
+      const sel = mods.filter((m) => pr.mods.includes(m.id));
+      let html = `<header class="pd-cover"><div class="pd-logo">IP</div><div><h1>Révision Concours MEF — Systèmes &amp; Réseaux</h1><p>Fiches de révision${App.backup.name() ? ' de ' + App.backup.name() : ''} · imprimé le ${new Date().toLocaleDateString('fr-FR')} · ${App.DEV.name}</p></div></header>`;
+      let pages = 0;
+      sel.forEach((m) => {
+        const parts = [];
+        if (pr.parts.ess) parts.push(`<div class="pd-ess">${m.lessons.map((l) => `<section class="pd-lesson"><h3>${l.idx + 1}. ${l.title}</h3>${l.essentiel || ''}</section>`).join('')}</div>`);
+        if (pr.parts.phr && m.phrases.length) parts.push(`<section class="pd-phr"><h3>🗣️ Les 5 phrases à savoir réciter</h3><ol>${m.phrases.map((ph) => `<li>${ph}</li>`).join('')}</ol></section>`);
+        if (pr.parts.cards && m.cards.length) parts.push(`<section class="pd-cards"><h3>🃏 Cartes mémoire — découper selon les pointillés, plier au milieu</h3><div class="pd-cardgrid">${m.cards.map((c) => `<div class="pd-card"><div class="pd-front">${c.front}</div><div class="pd-back">${c.back}</div></div>`).join('')}</div></section>`);
+        if (!parts.length) return;
+        pages++;
+        html += `<article class="pd-mod" style="--mc:${m.color}"><h2>${m.icon} ${m.label} — ${m.title}</h2>${m.day ? `<div class="pd-sub">${U.fmtDay(m.day)}${m.epreuve ? ' · ' + m.epreuve : ''}</div>` : ''}${parts.join('')}</article>`;
+      });
+      if (pr.parts.fiche && App.content.extras.fiche) {
+        pages++;
+        html += `<article class="pd-mod"><h2>⚡ Fiche « dernière heure »</h2>${App.content.extras.fiche.map((s) => `<section class="pd-lesson"><h3>${s.title}</h3>${s.html}</section>`).join('')}${App.content.extras.reflexes ? `<section class="pd-phr"><h3>🧭 Le jour J</h3><ol>${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></section>` : ''}</article>`;
+      }
+      if (pr.parts.blanc) blancs.forEach((b) => {
+        pages++;
+        html += `<article class="pd-mod pd-exam"><h2>📄 ${b.title}</h2><div class="pd-sub">${b.sub}</div>${b.context}${b.sections.map((s) => `<h3>${s.title} (${s.max} points)</h3><ol class="pd-q">${s.items.map((it) => `<li>${it.q} <i>(${U.fmtNum(it.pts)} pt${it.pts > 1 ? 's' : ''})</i>${pr.parts.corr ? `<div class="pd-corr"><b>Corrigé :</b> ${it.corr}</div>` : ''}</li>`).join('')}</ol>`).join('')}</article>`;
+      });
+      doc.innerHTML = pages ? html : '<p class="muted center">Rien à imprimer : coche au moins un contenu et une séance.</p>';
+      v.querySelector('#pInfo').textContent = pages ? `${pages} partie${pages > 1 ? 's' : ''} · aperçu ci-dessous` : '';
+      App.store.save();
+    }
+    U.$$('[data-part]', v).forEach((c) => c.addEventListener('change', () => { pr.parts[c.dataset.part] = c.checked; if (c.dataset.part === 'corr' && c.checked) { pr.parts.blanc = true; v.querySelector('[data-part="blanc"]').checked = true; } render(); }));
+    U.$$('[data-mod]', v).forEach((c) => c.addEventListener('change', () => { pr.mods = U.$$('[data-mod]', v).filter((x) => x.checked).map((x) => x.dataset.mod); render(); }));
+    U.$$('[data-all]', v).forEach((b) => b.addEventListener('click', () => { U.$$('[data-mod]', v).forEach((x) => (x.checked = b.dataset.all === '1')); pr.mods = b.dataset.all === '1' ? mods.map((m) => m.id) : []; render(); }));
+    v.querySelector('#doPrint').addEventListener('click', () => window.print());
+    render();
   });
 })();
 
