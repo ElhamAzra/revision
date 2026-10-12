@@ -50,8 +50,8 @@
 
     let heroCount, heroText;
     if (ex.days > 1) { heroCount = `J-${ex.days}`; heroText = `avant le concours (${U.fmtDay(ex.date)})`; }
-    else if (ex.days === 1) { heroCount = 'J-1'; heroText = 'C\'est demain ! Relis la fiche dernière heure et dors bien.'; }
-    else if (ex.days === 0) { heroCount = 'Jour J'; heroText = 'Respire. Tu as travaillé. Lis tout le sujet, commence par ce que tu maîtrises.'; }
+    else if (ex.days === 1) { heroCount = 'J-1'; heroText = 'C\'est demain ! Relis la fiche dernière heure, dors bien… et bonne chance ! 🍀'; }
+    else if (ex.days === 0) { heroCount = 'Jour J'; heroText = 'Bonne chance ! 🍀 Respire, lis tout le sujet et commence par ce que tu maîtrises.'; }
     else { heroCount = '✓'; heroText = 'Le concours est passé — tu peux continuer à t\'entraîner.'; }
 
     // Reprendre là où on s'était arrêté : la leçon ouverte en dernier (ou la suivante si elle est comprise)
@@ -119,6 +119,11 @@
 
       <div class="row between mt3"><h2 class="mb0">Tes modules</h2><a href="#/plan" class="small">Voir le plan →</a></div>
       <div class="mod-grid mt1">${App.content.modules.map((m) => modCard(m, today)).join('')}</div>
+
+      <a class="luck-foot mt3" href="#/apropos">
+        <span class="luck-clover sm">🍀</span>
+        <span class="grow"><b>Bonne chance pour le concours${name ? ',' + name : ''}&nbsp;!</b><small>Application développée par ${App.DEV.name} · contact et à propos ›</small></span>
+      </a>
     `);
     App.backup.bindReminder(App.ui.root());
   });
@@ -168,7 +173,8 @@
           <button class="onb-opt" data-go="new"><span class="e">✨</span><span><b>C'est ma première fois</b><small>Je crée mon profil en 30 secondes.</small></span></button>
           <button class="onb-opt" data-go="restore"><span class="e">📂</span><span><b>J'ai déjà une sauvegarde</b><small>Je reprends ma progression (fichier <code>.json</code> téléchargé depuis l'application, sur ce téléphone ou un autre appareil).</small></span></button>
         </div>
-        <p class="center tiny muted mt2 hide-m">Astuce : tu peux aussi glisser-déposer ton fichier de sauvegarde n'importe où dans la fenêtre.</p>`,
+        <p class="center tiny muted mt2 hide-m">Astuce : tu peux aussi glisser-déposer ton fichier de sauvegarde n'importe où dans la fenêtre.</p>
+        <p class="center tiny muted mt1 mb0">Application développée par <b>${App.DEV.name}</b> · Bonne chance pour le concours 🍀</p>`,
       // 1 — toi
       () => `${dots(1)}
         <h2 class="center">Faisons connaissance 👋</h2>

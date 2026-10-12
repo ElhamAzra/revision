@@ -24,14 +24,15 @@
     { href: '#/fiche', ico: '⚡', label: 'Fiche dernière heure', match: /^\/fiche/ },
     { href: '#/glossaire', ico: '🔤', label: 'Glossaire', match: /^\/glossaire/ },
     { href: '#/recherche', ico: '🔎', label: 'Recherche', match: /^\/recherche/ },
-    { href: '#/profil', ico: '👤', label: 'Profil & réglages', match: /^\/profil/ }
+    { href: '#/profil', ico: '👤', label: 'Profil & réglages', match: /^\/profil/ },
+    { href: '#/apropos', ico: 'ℹ️', label: 'À propos', match: /^\/apropos/ }
   ];
   const BOTTOM = [
     { href: '#/', ico: '🏠', label: 'Accueil', match: /^\/$/ },
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos)/ }
   ];
 
   let back = null;

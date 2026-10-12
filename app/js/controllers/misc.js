@@ -143,7 +143,7 @@
         <div class="row"><span class="set-lbl">Me rappeler :</span>${App.backup.everyControl()}</div>
         <div class="tiny muted">Sur ordinateur, tu peux aussi glisser-déposer un fichier de sauvegarde sur la fenêtre. Sur téléphone, le fichier arrive dans « Téléchargements » : envoie-le-toi (WhatsApp, e-mail) pour le garder ailleurs.</div>
       </div>
-      <div class="card mt2 small muted"><b>À propos.</b> Application de révision 100 % hors ligne, construite à partir du plan « Concours MEF Niger — 9 séances » et des supports de cours de l'ESTN (M. M. Maazou). Méthodes : rappel actif, répétition espacée, pré-test, alternance, exemples résolus, carnet d'erreurs. Version ${App.version}.</div>`);
+      <a class="card hover mt2 row nowrap" href="#/apropos" style="color:inherit;text-decoration:none"><span style="font-size:1.6rem">ℹ️</span><div class="grow"><b>À propos de l'application</b><div class="small muted">Développeur, contact, sources et méthodes · version ${App.version}</div></div><span class="muted">›</span></a>`);
     const set = (k, val) => { st.settings[k] = val; App.store.save(); App.layout.refresh(); };
     v.querySelector('#sName').addEventListener('input', (e) => set('name', e.target.value.trim()));
     v.querySelector('#sDate').addEventListener('change', (e) => e.target.value && set('examDate', e.target.value));
@@ -159,5 +159,46 @@
     v.querySelector('#imp').addEventListener('click', () => App.backup.pick());
     App.backup.bindEvery(v.querySelector('#bkBox'));
     v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.ui.applyTypo(); App.layout.applyNav(); App.layout.refresh(); R.go('/'); setTimeout(App.home.onboard, 300); }, true));
+  });
+
+  /* ---------- À propos & développeur ---------- */
+  R.add('/apropos', () => {
+    App.layout.setTitle('À propos');
+    const D = App.DEV;
+    const nm = App.backup.name();
+    const ex = App.store.state.settings.examDate;
+    const dl = U.daysBetween(U.dayKey(), ex);
+    App.ui.mount(`
+      <div class="page-head"><h1>ℹ️ À propos</h1><div class="sub">Révision Concours MEF Niger — option Systèmes &amp; Réseaux · version ${App.version}</div></div>
+      <section class="luck">
+        <div class="luck-clover">🍀</div>
+        <div>
+          <div class="luck-t">Bonne chance pour le concours${nm ? ', ' + nm : ''}&nbsp;!</div>
+          <p class="mb0">${dl > 0 ? `Encore <b>${dl} jour${dl > 1 ? 's' : ''}</b> : chaque séance compte. ` : dl === 0 ? 'C\'est le jour J : respire, lis tout le sujet et commence par ce que tu maîtrises. ' : ''}Révise un peu chaque jour, refais tes erreurs, dors bien la veille. Tu as toutes les clés pour réussir. 💪</p>
+        </div>
+      </section>
+      <div class="grid c2 mt2">
+        <div class="card dev-card">
+          <div class="dev-head"><span class="dev-av">${D.initials}</span><div><div class="tiny muted dev-role">Développeur de l'application</div><h2 class="mb0">${D.name}</h2></div></div>
+          <div class="dev-links mt2">
+            <a class="dev-link" href="mailto:${D.email}?subject=${encodeURIComponent('Application Révision MEF')}"><span>✉️</span><div><small>E-mail</small><b>${D.email}</b></div></a>
+            <a class="dev-link" href="tel:${D.phone}"><span>📞</span><div><small>Téléphone</small><b>${D.phoneDisplay}</b></div></a>
+            <a class="dev-link" href="https://wa.me/${D.phone.replace('+', '')}" target="_blank" rel="noopener"><span>💬</span><div><small>WhatsApp</small><b>${D.phoneDisplay}</b></div></a>
+          </div>
+          <p class="small muted mt2 mb0">Une question, une erreur dans un cours ou une idée d'amélioration ? Écris-moi : ça aide aussi les prochains candidats.</p>
+        </div>
+        <div class="card">
+          <h3>📚 L'application</h3>
+          <ul class="small mb0" style="padding-left:1.1rem">
+            <li><b>100 % hors ligne</b> : un seul fichier, rien à installer, aucune donnée envoyée sur Internet.</li>
+            <li><b>Sources</b> : plan « Concours MEF Niger — 9 séances » et supports de cours de l'ESTN (M. M. Maazou), complétés et vérifiés ; les erreurs relevées dans les supports sont signalées.</li>
+            <li><b>Méthodes</b> : rappel actif, répétition espacée, pré-test, alternance des thèmes, exemples résolus pas à pas, carnet d'erreurs.</li>
+            <li><b>Contenu</b> : ${App.content.lessonCount()} leçons, ${Object.keys(App.content.cards).length} cartes, ${App.gen.list.length} générateurs d'exercices infinis, ${App.labs ? App.labs.length : 15} labs, examens blancs.</li>
+            <li><b>Polices</b> : Lexend, Nunito, JetBrains Mono (licence SIL Open Font License 1.1).</li>
+            <li><b>Confidentialité</b> : ta progression reste sur ton appareil ; seules tes sauvegardes en fichier la transportent.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="center small muted mt3">© ${new Date().getFullYear()} ${D.name} · Fait avec ❤️ pour les candidats du concours MEF.</p>`);
   });
 })();

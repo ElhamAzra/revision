@@ -480,6 +480,38 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 }
 @media (max-width: 600px) { .onb-goals small:first-of-type { display: none; } .bk-sum b { font-size: 1rem; } }
 
+/* À propos, développeur, bonne chance */
+.luck {
+  display: flex; gap: 1.1rem; align-items: center; padding: clamp(1.1rem, 2.5vw, 1.7rem); border-radius: 22px; color: #fff;
+  background: linear-gradient(135deg, #0f9d58 0%, #16a34a 45%, #f59e0b 130%); box-shadow: var(--shadow-lg);
+}
+.luck p { opacity: .95; }
+.luck-t { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.25rem, 1.05rem + 1vw, 1.75rem); letter-spacing: -.02em; margin-bottom: .3rem; }
+.luck-clover { font-size: 3rem; line-height: 1; animation: flame 2.4s ease-in-out infinite; flex: none; }
+.luck-clover.sm { font-size: 1.8rem; }
+.luck-foot {
+  display: flex; align-items: center; gap: .9rem; padding: .9rem 1.1rem; border-radius: var(--radius); color: var(--text);
+  background: linear-gradient(135deg, color-mix(in srgb, #16a34a 14%, var(--surface)), color-mix(in srgb, #f59e0b 10%, var(--surface)));
+  border: 1px solid color-mix(in srgb, #16a34a 30%, var(--border));
+}
+.luck-foot:hover { text-decoration: none; border-color: #16a34a; }
+.luck-foot b { display: block; font-family: var(--font-display); font-weight: 600; }
+.luck-foot small { display: block; color: var(--muted); font-size: .8rem; font-weight: 600; }
+.dev-head { display: flex; align-items: center; gap: 1rem; }
+.dev-av {
+  width: 64px; height: 64px; border-radius: 20px; flex: none; display: grid; place-items: center; color: #fff;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; letter-spacing: .02em;
+  background: linear-gradient(135deg, var(--primary), #ff7a1a); box-shadow: 0 10px 24px -10px var(--primary);
+}
+.dev-role { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+.dev-links { display: grid; gap: .5rem; }
+.dev-link { display: flex; align-items: center; gap: .8rem; padding: .65rem .85rem; border-radius: 13px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); }
+.dev-link:hover { border-color: var(--primary); background: var(--primary-soft); text-decoration: none; }
+.dev-link > span { font-size: 1.3rem; }
+.dev-link small { display: block; color: var(--muted); font-size: .74rem; font-weight: 700; }
+.dev-link b { font-family: var(--font-display); font-weight: 600; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .luck { flex-direction: column; text-align: center; } }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);
@@ -1048,7 +1080,15 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
 (function () {
   'use strict';
   const App = (window.App = window.App || {});
-  App.version = '1.0.0';
+  App.version = '1.1.0';
+  /* Développeur de l'application (page « À propos ») */
+  App.DEV = {
+    name: 'Abderrahim Amadou Hassane',
+    initials: 'AAH',
+    email: 'abderrahim.amadou@gmail.com',
+    phone: '+22799008767',
+    phoneDisplay: '+227 99 00 87 67'
+  };
 
   const U = (App.util = {});
 
@@ -2481,14 +2521,15 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     { href: '#/fiche', ico: '⚡', label: 'Fiche dernière heure', match: /^\/fiche/ },
     { href: '#/glossaire', ico: '🔤', label: 'Glossaire', match: /^\/glossaire/ },
     { href: '#/recherche', ico: '🔎', label: 'Recherche', match: /^\/recherche/ },
-    { href: '#/profil', ico: '👤', label: 'Profil & réglages', match: /^\/profil/ }
+    { href: '#/profil', ico: '👤', label: 'Profil & réglages', match: /^\/profil/ },
+    { href: '#/apropos', ico: 'ℹ️', label: 'À propos', match: /^\/apropos/ }
   ];
   const BOTTOM = [
     { href: '#/', ico: '🏠', label: 'Accueil', match: /^\/$/ },
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos)/ }
   ];
 
   let back = null;
@@ -9657,8 +9698,8 @@ fi`) },
 
     let heroCount, heroText;
     if (ex.days > 1) { heroCount = `J-${ex.days}`; heroText = `avant le concours (${U.fmtDay(ex.date)})`; }
-    else if (ex.days === 1) { heroCount = 'J-1'; heroText = 'C\'est demain ! Relis la fiche dernière heure et dors bien.'; }
-    else if (ex.days === 0) { heroCount = 'Jour J'; heroText = 'Respire. Tu as travaillé. Lis tout le sujet, commence par ce que tu maîtrises.'; }
+    else if (ex.days === 1) { heroCount = 'J-1'; heroText = 'C\'est demain ! Relis la fiche dernière heure, dors bien… et bonne chance ! 🍀'; }
+    else if (ex.days === 0) { heroCount = 'Jour J'; heroText = 'Bonne chance ! 🍀 Respire, lis tout le sujet et commence par ce que tu maîtrises.'; }
     else { heroCount = '✓'; heroText = 'Le concours est passé — tu peux continuer à t\'entraîner.'; }
 
     // Reprendre là où on s'était arrêté : la leçon ouverte en dernier (ou la suivante si elle est comprise)
@@ -9726,6 +9767,11 @@ fi`) },
 
       <div class="row between mt3"><h2 class="mb0">Tes modules</h2><a href="#/plan" class="small">Voir le plan →</a></div>
       <div class="mod-grid mt1">${App.content.modules.map((m) => modCard(m, today)).join('')}</div>
+
+      <a class="luck-foot mt3" href="#/apropos">
+        <span class="luck-clover sm">🍀</span>
+        <span class="grow"><b>Bonne chance pour le concours${name ? ',' + name : ''}&nbsp;!</b><small>Application développée par ${App.DEV.name} · contact et à propos ›</small></span>
+      </a>
     `);
     App.backup.bindReminder(App.ui.root());
   });
@@ -9775,7 +9821,8 @@ fi`) },
           <button class="onb-opt" data-go="new"><span class="e">✨</span><span><b>C'est ma première fois</b><small>Je crée mon profil en 30 secondes.</small></span></button>
           <button class="onb-opt" data-go="restore"><span class="e">📂</span><span><b>J'ai déjà une sauvegarde</b><small>Je reprends ma progression (fichier <code>.json</code> téléchargé depuis l'application, sur ce téléphone ou un autre appareil).</small></span></button>
         </div>
-        <p class="center tiny muted mt2 hide-m">Astuce : tu peux aussi glisser-déposer ton fichier de sauvegarde n'importe où dans la fenêtre.</p>`,
+        <p class="center tiny muted mt2 hide-m">Astuce : tu peux aussi glisser-déposer ton fichier de sauvegarde n'importe où dans la fenêtre.</p>
+        <p class="center tiny muted mt1 mb0">Application développée par <b>${App.DEV.name}</b> · Bonne chance pour le concours 🍀</p>`,
       // 1 — toi
       () => `${dots(1)}
         <h2 class="center">Faisons connaissance 👋</h2>
@@ -10908,7 +10955,7 @@ fi`) },
         <div class="row"><span class="set-lbl">Me rappeler :</span>${App.backup.everyControl()}</div>
         <div class="tiny muted">Sur ordinateur, tu peux aussi glisser-déposer un fichier de sauvegarde sur la fenêtre. Sur téléphone, le fichier arrive dans « Téléchargements » : envoie-le-toi (WhatsApp, e-mail) pour le garder ailleurs.</div>
       </div>
-      <div class="card mt2 small muted"><b>À propos.</b> Application de révision 100 % hors ligne, construite à partir du plan « Concours MEF Niger — 9 séances » et des supports de cours de l'ESTN (M. M. Maazou). Méthodes : rappel actif, répétition espacée, pré-test, alternance, exemples résolus, carnet d'erreurs. Version ${App.version}.</div>`);
+      <a class="card hover mt2 row nowrap" href="#/apropos" style="color:inherit;text-decoration:none"><span style="font-size:1.6rem">ℹ️</span><div class="grow"><b>À propos de l'application</b><div class="small muted">Développeur, contact, sources et méthodes · version ${App.version}</div></div><span class="muted">›</span></a>`);
     const set = (k, val) => { st.settings[k] = val; App.store.save(); App.layout.refresh(); };
     v.querySelector('#sName').addEventListener('input', (e) => set('name', e.target.value.trim()));
     v.querySelector('#sDate').addEventListener('change', (e) => e.target.value && set('examDate', e.target.value));
@@ -10924,6 +10971,47 @@ fi`) },
     v.querySelector('#imp').addEventListener('click', () => App.backup.pick());
     App.backup.bindEvery(v.querySelector('#bkBox'));
     v.querySelector('#rst').addEventListener('click', () => App.ui.confirm('<h3>Tout réinitialiser ?</h3><p>XP, cartes, erreurs, badges et réglages seront effacés. Pense à exporter avant.</p>', 'Réinitialiser', () => { App.store.reset(); App.ui.applyTheme(); App.ui.applyTypo(); App.layout.applyNav(); App.layout.refresh(); R.go('/'); setTimeout(App.home.onboard, 300); }, true));
+  });
+
+  /* ---------- À propos & développeur ---------- */
+  R.add('/apropos', () => {
+    App.layout.setTitle('À propos');
+    const D = App.DEV;
+    const nm = App.backup.name();
+    const ex = App.store.state.settings.examDate;
+    const dl = U.daysBetween(U.dayKey(), ex);
+    App.ui.mount(`
+      <div class="page-head"><h1>ℹ️ À propos</h1><div class="sub">Révision Concours MEF Niger — option Systèmes &amp; Réseaux · version ${App.version}</div></div>
+      <section class="luck">
+        <div class="luck-clover">🍀</div>
+        <div>
+          <div class="luck-t">Bonne chance pour le concours${nm ? ', ' + nm : ''}&nbsp;!</div>
+          <p class="mb0">${dl > 0 ? `Encore <b>${dl} jour${dl > 1 ? 's' : ''}</b> : chaque séance compte. ` : dl === 0 ? 'C\'est le jour J : respire, lis tout le sujet et commence par ce que tu maîtrises. ' : ''}Révise un peu chaque jour, refais tes erreurs, dors bien la veille. Tu as toutes les clés pour réussir. 💪</p>
+        </div>
+      </section>
+      <div class="grid c2 mt2">
+        <div class="card dev-card">
+          <div class="dev-head"><span class="dev-av">${D.initials}</span><div><div class="tiny muted dev-role">Développeur de l'application</div><h2 class="mb0">${D.name}</h2></div></div>
+          <div class="dev-links mt2">
+            <a class="dev-link" href="mailto:${D.email}?subject=${encodeURIComponent('Application Révision MEF')}"><span>✉️</span><div><small>E-mail</small><b>${D.email}</b></div></a>
+            <a class="dev-link" href="tel:${D.phone}"><span>📞</span><div><small>Téléphone</small><b>${D.phoneDisplay}</b></div></a>
+            <a class="dev-link" href="https://wa.me/${D.phone.replace('+', '')}" target="_blank" rel="noopener"><span>💬</span><div><small>WhatsApp</small><b>${D.phoneDisplay}</b></div></a>
+          </div>
+          <p class="small muted mt2 mb0">Une question, une erreur dans un cours ou une idée d'amélioration ? Écris-moi : ça aide aussi les prochains candidats.</p>
+        </div>
+        <div class="card">
+          <h3>📚 L'application</h3>
+          <ul class="small mb0" style="padding-left:1.1rem">
+            <li><b>100 % hors ligne</b> : un seul fichier, rien à installer, aucune donnée envoyée sur Internet.</li>
+            <li><b>Sources</b> : plan « Concours MEF Niger — 9 séances » et supports de cours de l'ESTN (M. M. Maazou), complétés et vérifiés ; les erreurs relevées dans les supports sont signalées.</li>
+            <li><b>Méthodes</b> : rappel actif, répétition espacée, pré-test, alternance des thèmes, exemples résolus pas à pas, carnet d'erreurs.</li>
+            <li><b>Contenu</b> : ${App.content.lessonCount()} leçons, ${Object.keys(App.content.cards).length} cartes, ${App.gen.list.length} générateurs d'exercices infinis, ${App.labs ? App.labs.length : 15} labs, examens blancs.</li>
+            <li><b>Polices</b> : Lexend, Nunito, JetBrains Mono (licence SIL Open Font License 1.1).</li>
+            <li><b>Confidentialité</b> : ta progression reste sur ton appareil ; seules tes sauvegardes en fichier la transportent.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="center small muted mt3">© ${new Date().getFullYear()} ${D.name} · Fait avec ❤️ pour les candidats du concours MEF.</p>`);
   });
 })();
 

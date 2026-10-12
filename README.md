@@ -55,3 +55,12 @@ tools/build_single.py     fabrique revision-concours-mef.html (tout en un)
 ```
 
 Régénérer la version un seul fichier après une modification : `python3 tools/build_single.py`.
+
+## Développeur
+
+**Abderrahim Amadou Hassane** — ✉️ [abderrahim.amadou@gmail.com](mailto:abderrahim.amadou@gmail.com) · 📞 +227 99 00 87 67
+
+Une question, une erreur dans un cours ou une idée d'amélioration ? N'hésitez pas à écrire.
+
+🍀 **Bonne chance pour le concours !**
+

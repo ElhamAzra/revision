@@ -3,7 +3,15 @@
 (function () {
   'use strict';
   const App = (window.App = window.App || {});
-  App.version = '1.0.0';
+  App.version = '1.1.0';
+  /* Développeur de l'application (page « À propos ») */
+  App.DEV = {
+    name: 'Abderrahim Amadou Hassane',
+    initials: 'AAH',
+    email: 'abderrahim.amadou@gmail.com',
+    phone: '+22799008767',
+    phoneDisplay: '+227 99 00 87 67'
+  };
 
   const U = (App.util = {});
 
