@@ -44,6 +44,7 @@ def main() -> int:
     html = re.sub(r'\s*<link rel="manifest"[^>]*>', "", html)
     html = re.sub(r'\s*<link rel="apple-touch-icon"[^>]*>', "", html)
     OUT.write_text(html, encoding="utf-8")
+    (APP / OUT.name).write_text(html, encoding="utf-8")  # copie publiée en ligne (téléchargement)
     size = OUT.stat().st_size / 1024
     print(f"OK : {OUT.relative_to(ROOT)} ({size:.0f} Ko)")
     if missing:
