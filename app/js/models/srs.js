@@ -59,6 +59,24 @@
       return out;
     },
 
+    /* Cartes « fragiles » pour la veille : les moins solides d'abord (boîte basse, oublis), complétées
+       par des nouvelles cartes des modules les moins maîtrisés */
+    fragile(n) {
+      const seen = App.content.allCards((c) => !!srs.state(c.id)).sort((a, b) => {
+        const A = srs.state(a.id), B = srs.state(b.id);
+        return A.box - B.box || B.lapses - A.lapses || A.due - B.due;
+      });
+      const out = seen.slice(0, n);
+      if (out.length < n) {
+        const mods = App.content.modules.filter((m) => m.cards.length).sort((a, b) => App.progress.mastery(a.id) - App.progress.mastery(b.id));
+        for (const m of mods) {
+          for (const c of m.cards) { if (out.length >= n) break; if (!srs.state(c.id)) out.push(c); }
+          if (out.length >= n) break;
+        }
+      }
+      return out;
+    },
+
     counts(mod) {
       const now = Date.now();
       const all = App.content.allCards((c) => !mod || c.mod === mod);

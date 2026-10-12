@@ -27,7 +27,8 @@
     counters: {},       // compteurs divers pour les badges
     notes: {},          // { lessonId: texte }
     guided: null,       // séance guidée du jour { day, mod, done, ... }
-    readiness: {}       // { 'AAAA-MM-JJ': moyenne estimée }
+    readiness: {},      // { 'AAAA-MM-JJ': moyenne estimée }
+    veille: null        // parcours « veille du concours » du jour
   });
 
   let mem = null; // repli si localStorage indisponible

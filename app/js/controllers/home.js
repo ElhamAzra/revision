@@ -76,6 +76,7 @@
             <div class="hero-goal-m"><div class="row between small" style="opacity:.92"><span>🎯 Objectif du jour</span><b>${t.xp} / ${st.settings.dailyGoal} XP</b></div>${App.ui.bar(goalPct)}</div>
             <p class="sub mt1 mb0">${todayMod ? `Séance du jour : <b>${todayMod.icon} ${todayMod.title}</b>` : 'Choisis un module ou lance un entraînement.'}</p>
             <div class="row mt2 hero-cta">
+              ${ex.days >= 0 && ex.days <= 2 ? `<a class="btn white lg" href="#/veille">🌙 Mode veille du concours</a>` : ''}
               ${resume ? `<a class="btn white lg" href="#/cours/${resume.m.id}/${resume.l.idx}" title="${U.esc(resume.l.title)}">▶ Reprendre <span class="hero-cta-sub">${resume.m.icon} ${U.esc(resume.l.title)}</span></a>` : ''}
               ${todayMod ? `<a class="btn ${resume ? '' : 'white lg'}" href="#/seance">${App.guided.active(todayMod.id) ? '🧭 Continuer la séance guidée' : resume ? '🧭 Séance guidée' : '🧭 Commencer la séance guidée'}</a>` : (resume ? '<a class="btn" href="#/seance">🧭 Séance guidée</a>' : '<a class="btn white lg" href="#/seance">🧭 Séance guidée</a>')}
               <a class="btn" href="#/eclair/mix">⚡ Défi éclair</a>

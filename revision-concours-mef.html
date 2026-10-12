@@ -601,6 +601,19 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .prio h3 { margin-bottom: .2rem; }
 @media (max-width: 600px) { .prep-hero { justify-content: center; text-align: center; } .ph-notes { justify-content: center; } .ph-notes > div { min-width: 6.5rem; } }
 
+/* Veille du concours */
+.veille-hero {
+  display: flex; gap: 1.2rem; align-items: center; flex-wrap: wrap; color: #fff; border-radius: 24px;
+  padding: clamp(1.15rem, 2.6vw, 2rem); background: radial-gradient(600px 300px at 90% -20%, rgba(196, 181, 253, .35), transparent 60%), linear-gradient(160deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
+  box-shadow: var(--shadow-lg);
+}
+.veille-hero .grow { min-width: 15rem; }
+.vh-moon { font-size: 3.2rem; filter: drop-shadow(0 0 18px rgba(253, 224, 71, .55)); }
+.checklist { display: grid; gap: .45rem; margin-top: .8rem; }
+.checklist label { display: flex; gap: .6rem; align-items: center; padding: .5rem .7rem; border-radius: 11px; background: var(--surface-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; }
+.checklist input { width: 1.15rem; height: 1.15rem; accent-color: var(--ok); }
+.checklist label:has(input:checked) { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 40%, transparent); text-decoration: line-through; color: var(--muted); }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);
@@ -1825,7 +1838,8 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     counters: {},       // compteurs divers pour les badges
     notes: {},          // { lessonId: texte }
     guided: null,       // séance guidée du jour { day, mod, done, ... }
-    readiness: {}       // { 'AAAA-MM-JJ': moyenne estimée }
+    readiness: {},      // { 'AAAA-MM-JJ': moyenne estimée }
+    veille: null        // parcours « veille du concours » du jour
   });
 
   let mem = null; // repli si localStorage indisponible
@@ -2070,6 +2084,24 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
       const nNew = opts.newCount != null ? opts.newCount : App.store.state.settings.newCardsPerSession;
       // nouvelles cartes dans l'ordre du cours (les modules du jour d'abord)
       const out = due.slice(0, opts.max || 60).concat(fresh.slice(0, nNew));
+      return out;
+    },
+
+    /* Cartes « fragiles » pour la veille : les moins solides d'abord (boîte basse, oublis), complétées
+       par des nouvelles cartes des modules les moins maîtrisés */
+    fragile(n) {
+      const seen = App.content.allCards((c) => !!srs.state(c.id)).sort((a, b) => {
+        const A = srs.state(a.id), B = srs.state(b.id);
+        return A.box - B.box || B.lapses - A.lapses || A.due - B.due;
+      });
+      const out = seen.slice(0, n);
+      if (out.length < n) {
+        const mods = App.content.modules.filter((m) => m.cards.length).sort((a, b) => App.progress.mastery(a.id) - App.progress.mastery(b.id));
+        for (const m of mods) {
+          for (const c of m.cards) { if (out.length >= n) break; if (!srs.state(c.id)) out.push(c); }
+          if (out.length >= n) break;
+        }
+      }
       return out;
     },
 
@@ -2619,6 +2651,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     { href: '#/preparation', ico: '📈', label: 'Indice de préparation', match: /^\/preparation/ },
     { href: '#/erreurs', ico: '🩹', label: 'Carnet d\'erreurs', match: /^\/erreurs/, count: () => Object.keys(App.store.state.errors).length },
     { sep: 'Mémo' },
+    { href: '#/veille', ico: '🌙', label: 'Veille du concours', match: /^\/veille/ },
     { href: '#/fiche', ico: '⚡', label: 'Fiche dernière heure', match: /^\/fiche/ },
     { href: '#/glossaire', ico: '🔤', label: 'Glossaire', match: /^\/glossaire/ },
     { href: '#/recherche', ico: '🔎', label: 'Recherche', match: /^\/recherche/ },
@@ -2631,7 +2664,7 @@ canvas.confetti { position: fixed; inset: 0; z-index: 120; pointer-events: none;
     { href: '#/cours', ico: '📚', label: 'Cours', match: /^\/(cours|pretest)/ },
     { href: '#/cartes', ico: '🃏', label: 'Cartes', match: /^\/cartes/, count: () => App.srs.counts().due },
     { href: '#/entrainement', ico: '🎯', label: 'S\'entraîner', match: /^\/(entrainement|gen|quiz|exo|eclair|labs?|examen|erreurs|preparation)/ },
-    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide)/ }
+    { href: '#/plus', ico: '☰', label: 'Plus', match: /^\/(plus|fiche|glossaire|recherche|profil|plan|apropos|seance|aide|veille)/ }
   ];
 
   let back = null;
@@ -9976,6 +10009,7 @@ fi`) },
             <div class="hero-goal-m"><div class="row between small" style="opacity:.92"><span>🎯 Objectif du jour</span><b>${t.xp} / ${st.settings.dailyGoal} XP</b></div>${App.ui.bar(goalPct)}</div>
             <p class="sub mt1 mb0">${todayMod ? `Séance du jour : <b>${todayMod.icon} ${todayMod.title}</b>` : 'Choisis un module ou lance un entraînement.'}</p>
             <div class="row mt2 hero-cta">
+              ${ex.days >= 0 && ex.days <= 2 ? `<a class="btn white lg" href="#/veille">🌙 Mode veille du concours</a>` : ''}
               ${resume ? `<a class="btn white lg" href="#/cours/${resume.m.id}/${resume.l.idx}" title="${U.esc(resume.l.title)}">▶ Reprendre <span class="hero-cta-sub">${resume.m.icon} ${U.esc(resume.l.title)}</span></a>` : ''}
               ${todayMod ? `<a class="btn ${resume ? '' : 'white lg'}" href="#/seance">${App.guided.active(todayMod.id) ? '🧭 Continuer la séance guidée' : resume ? '🧭 Séance guidée' : '🧭 Commencer la séance guidée'}</a>` : (resume ? '<a class="btn" href="#/seance">🧭 Séance guidée</a>' : '<a class="btn white lg" href="#/seance">🧭 Séance guidée</a>')}
               <a class="btn" href="#/eclair/mix">⚡ Défi éclair</a>
@@ -10394,13 +10428,13 @@ fi`) },
         }).join('')}</div>`, { help: 'cartes' });
       return;
     }
-    session(query.mod || null, query.g != null && App.guided.active(query.mod));
+    session(query.mod || null, query.g != null && App.guided.active(query.mod), query.fragile != null);
   });
 
-  function session(modId, guidedOn) {
-    const queue = App.srs.session({ mod: modId });
+  function session(modId, guidedOn, fragile) {
+    const queue = fragile ? App.srs.fragile(20) : App.srs.session({ mod: modId });
     const m = modId ? App.content.mod(modId) : null;
-    const title = m ? `${m.icon} Cartes — ${m.short || m.title}` : '🃏 Session de cartes';
+    const title = fragile ? '🌙 Les 20 cartes les plus fragiles' : m ? `${m.icon} Cartes — ${m.short || m.title}` : '🃏 Session de cartes';
     let i = 0, flipped = false, reviewed = 0, xp = 0;
     const tally = [0, 0, 0, 0];
     if (!queue.length) {
@@ -10500,8 +10534,9 @@ fi`) },
       host.innerHTML = `<div class="card pad-lg center"><div class="big-emoji" style="font-size:3.4rem">🧠</div><h2 class="mt1">${reviewed} carte(s) révisée(s)</h2>
         <div class="row mt1" style="justify-content:center"><span class="chip ko">À revoir ${tally[0]}</span><span class="chip warn">Difficile ${tally[1]}</span><span class="chip ok">Bien ${tally[2]}</span><span class="chip pri">Facile ${tally[3]}</span></div>
         <p class="muted mt2">+${xp} XP · prochaine échéance ${App.srs.nextDueLabel(modId) || '—'}</p>
-        <div class="row mt2" style="justify-content:center">${guidedOn ? '<a class="btn primary" href="#/seance">🧭 Suite de la séance ▶</a><a class="btn" href="#/cartes">Autre paquet</a>' : '<a class="btn primary" href="#/cartes">Autre paquet</a><a class="btn" href="#/entrainement">S\'entraîner</a>'}</div></div>`;
+        <div class="row mt2" style="justify-content:center">${fragile ? '<a class="btn primary" href="#/veille">🌙 Suite de la veille ▶</a>' : guidedOn ? '<a class="btn primary" href="#/seance">🧭 Suite de la séance ▶</a><a class="btn" href="#/cartes">Autre paquet</a>' : '<a class="btn primary" href="#/cartes">Autre paquet</a><a class="btn" href="#/entrainement">S\'entraîner</a>'}</div></div>`;
       if (guidedOn) App.guided.mark('cartes', modId);
+      if (fragile) App.veille.mark('cartes');
       v.querySelector('#cCount').textContent = 'Terminé';
       App.store.save();
     }
@@ -10678,7 +10713,7 @@ fi`) },
   /* ---------- Carnet d'erreurs ---------- */
   R.add('/erreurs', (p, query) => {
     App.layout.setTitle('Carnet d\'erreurs');
-    if (query.go != null) return replay(query.mod || null, query.g != null && App.guided.active(query.mod));
+    if (query.go != null) return replay(query.mod || null, query.g != null && App.guided.active(query.mod), query.v != null);
     const list = App.progress.errors();
     const byMod = {};
     list.forEach((e) => (byMod[e.mod] = (byMod[e.mod] || 0) + 1));
@@ -10694,8 +10729,8 @@ fi`) },
     if (cb) cb.addEventListener('click', () => App.ui.confirm('<h3>Vider le carnet ?</h3><p>Les erreurs enregistrées seront supprimées.</p>', 'Vider', () => { App.store.state.errors = {}; App.store.save(); R.resolve(); }, true));
   });
 
-  function replay(mod, g) {
-    const list = App.progress.errors(mod).slice(0, 20).map((e) => {
+  function replay(mod, g, vl) {
+    const list = App.progress.errors(mod).slice(0, vl ? 10 : 20).map((e) => {
       const q = JSON.parse(JSON.stringify(e.q));
       delete q._order; delete q._rorder;
       return q;
@@ -10707,9 +10742,9 @@ fi`) },
       sub: 'Deux bonnes réponses d\'affilée sur une erreur = elle est vaincue.',
       crumbs: [['Carnet d\'erreurs', '#/erreurs'], ['Rejouer']],
       questions: U.shuffle(list),
-      backHref: g ? '#/seance' : '#/erreurs',
-      onFinish: g ? () => App.guided.mark('erreurs', mod) : null,
-      nextHref: g ? '#/seance' : null, nextLabel: '🧭 Suite de la séance ▶',
+      backHref: vl ? '#/veille' : g ? '#/seance' : '#/erreurs',
+      onFinish: vl ? () => App.veille.mark('erreurs') : g ? () => App.guided.mark('erreurs', mod) : null,
+      nextHref: vl ? '#/veille' : g ? '#/seance' : null, nextLabel: vl ? '🌙 Suite de la veille ▶' : '🧭 Suite de la séance ▶',
       retry: () => R.resolve()
     });
   }
@@ -10906,6 +10941,74 @@ fi`) },
     });
     const cur = v.querySelector('.path-step.cur');
     if (cur && doneN > 0) setTimeout(() => cur.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+  });
+
+  /* ---------- Veille du concours : 30 minutes ciblées ---------- */
+  const veille = (App.veille = {
+    state() {
+      const st = App.store.state;
+      if (!st.veille || st.veille.day !== U.dayKey()) st.veille = { day: U.dayKey(), done: {}, t0: Date.now() };
+      return st.veille;
+    },
+    mark(key) { veille.state().done[key] = veille.state().done[key] || 'ok'; App.store.save(); }
+  });
+
+  const CHECK = ['Convocation et pièce d\'identité', 'Deux stylos (bleu/noir), crayon, gomme, règle', 'Montre (le téléphone sera interdit)', 'Eau et un en-cas', 'Itinéraire et heure d\'arrivée (30 min d\'avance)', 'Réveil réglé, 7 à 8 h de sommeil'];
+
+  R.add('/veille', () => {
+    App.layout.setTitle('Veille du concours');
+    const v0 = veille.state();
+    const d = v0.done;
+    const errs = App.progress.errors().length;
+    const ex = App.store.state.settings.examDate;
+    const dl = U.daysBetween(U.dayKey(), ex);
+    const nm = App.backup.name();
+    const steps = [
+      { key: 'fiche', ico: '⚡', title: 'Relire la fiche dernière heure', min: 8, desc: 'Tableaux de masques, ports, AD/OSPF, commandes Linux, RAID, sauvegardes… tout l\'essentiel sur une page.', href: '#/fiche?v=1', cta: 'Ouvrir la fiche', done: !!d.fiche },
+      { key: 'erreurs', ico: '🩹', title: 'Tes dernières erreurs', min: 7, desc: errs ? `Rejoue jusqu'à 10 de tes ${errs} erreurs : ce sont tes pièges personnels.` : 'Aucune erreur en attente 👌', href: errs ? '#/erreurs?go=1&v=1' : null, inline: !errs, cta: errs ? 'Rejouer mes erreurs' : '✓ Continuer', done: !!d.erreurs },
+      { key: 'cartes', ico: '🃏', title: 'Les 20 cartes les plus fragiles', min: 7, desc: 'Les cartes que tu oublies le plus (ou pas encore vues dans tes modules faibles).', href: '#/cartes?go=1&fragile=1', cta: 'Lancer les 20 cartes', done: !!d.cartes },
+      { key: 'exam', ico: '📝', title: 'Mini-examen de confiance', min: 8, desc: '12 questions des deux épreuves, corrigées tout de suite. Objectif : finir sur une bonne note.', href: '#/veille/exam', cta: 'Commencer', done: !!d.exam },
+      { key: 'pret', ico: '🎒', title: 'Réflexes du jour J et sac prêt', min: 3, desc: 'Les réflexes pour l\'épreuve et la check-list du matin.', inline: true, cta: '✓ Je suis prêt' + (nm ? '' : '(e)'),
+        body: `${App.content.extras.reflexes ? `<ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol>` : ''}<div class="checklist">${CHECK.map((c, i) => `<label><input type="checkbox" data-ck="${i}"> ${c}</label>`).join('')}</div>`,
+        done: !!d.pret }
+    ];
+    const doneN = steps.filter((x) => x.done).length;
+    const all = doneN === steps.length;
+    if (all && !v0.finished) { v0.finished = true; App.game.addXP(40, false); App.store.save(); setTimeout(() => { App.fx.sound('level'); App.fx.confetti(1.4); }, 200); }
+    const v = App.ui.mount(`
+      <section class="veille-hero">
+        <div class="vh-moon">🌙</div>
+        <div class="grow">
+          <div class="lesson-kicker" style="color:#c4b5fd">Veille du concours${dl >= 0 ? ` · ${dl === 0 ? 'jour J' : dl === 1 ? 'demain' : 'J-' + dl}` : ''}</div>
+          <h1 class="mb0 mt1" style="color:#fff">30 minutes pour tout consolider</h1>
+          <p class="mb0 mt1" style="opacity:.88">Rien de nouveau ce soir : on relit, on corrige ses erreurs, on se rassure… et on va dormir.</p>
+        </div>
+        ${App.ui.ring(doneN / steps.length, 70, 7, '#c4b5fd', `${doneN}/${steps.length}`).replace('ring-bg', 'ring-bg" style="stroke:rgba(255,255,255,.18)').replace('class="ring-label"', 'class="ring-label" style="color:#fff"')}
+      </section>
+      ${all ? `<section class="luck mt2"><div class="luck-clover">🍀</div><div><div class="luck-t">Bonne chance pour le concours${nm ? ', ' + nm : ''}&nbsp;!</div><p class="mb0">Tu as fait le travail. Ferme l'application, prépare tes affaires et dors bien. Demain : lis tout le sujet, commence par ce que tu maîtrises, garde 10 minutes pour relire. 💪</p></div></section>` : ''}
+      <div class="card mt2">${path.html(steps)}</div>`, { narrow: true });
+    App.ui.hydrate(v);
+    path.bind(v, {
+      skip: (k) => { v0.done[k] = 'skip'; App.store.save(); R.resolve(); },
+      inline: (k) => { v0.done[k] = 'ok'; App.store.save(); R.resolve(); }
+    });
+  });
+
+  R.add('/veille/exam', () => {
+    const pick = (ids, n) => U.shuffle(ids.flatMap((id) => (App.content.mod(id) || { qcm: [] }).qcm)).slice(0, n);
+    const e2 = pick(['s1', 's2', 's3', 's4', 's5', 's6'], 5);
+    const gens = App.gen.list.filter((g) => ['s1', 'm0'].includes(g.mod));
+    for (let i = 0; i < 2 && gens.length; i++) e2.push(App.gen.make(U.pick(gens).id, 1));
+    const e1 = pick(['s7', 's8'], 5);
+    App.runner.start({
+      title: '📝 Mini-examen de confiance',
+      sub: '12 questions des deux épreuves. Corrigé tout de suite : chaque erreur est une chance de la corriger ce soir plutôt que demain.',
+      crumbs: [['Veille', '#/veille'], ['Mini-examen']],
+      questions: U.shuffle(e2.concat(e1)),
+      backHref: '#/veille',
+      onFinish: () => veille.mark('exam'),
+      nextHref: '#/veille', nextLabel: '🌙 Suite de la veille ▶'
+    });
   });
 })();
 
@@ -11484,13 +11587,17 @@ fi`) },
   });
 
   /* ---------- Fiche dernière heure ---------- */
-  R.add('/fiche', () => {
+  R.add('/fiche', (p, query) => {
     App.layout.setTitle('Fiche dernière heure');
     const f = App.content.extras.fiche;
-    App.ui.mount(`<div class="page-head"><h1>⚡ Fiche « dernière heure »</h1><div class="sub">À relire le matin du concours. Imprimable (Ctrl + P).</div></div>
+    const vl = query.v != null;
+    const v = App.ui.mount(`<div class="page-head"><h1>⚡ Fiche « dernière heure »</h1><div class="sub">À relire le matin du concours. Imprimable (Ctrl + P).</div></div>
+      ${vl ? '<a class="guided-pill" href="#/veille">🌙 Veille du concours · étape 1 : relis la fiche en entier <b>↩ revenir au parcours</b></a>' : ''}
       ${f ? f.map((s) => `<div class="card mt2"><h2>${s.title}</h2><div class="prose">${s.html}</div></div>`).join('') : '<p class="muted">Fiche indisponible.</p>'}
       ${App.content.extras.reflexes ? `<div class="card mt2"><h2>🧭 Le jour J : 8 réflexes</h2><ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol></div>` : ''}
-      <div class="row mt2"><button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
+      <div class="row mt2">${vl ? '<button class="btn primary" id="ficheOk">✓ Fiche relue → suite de la veille</button>' : ''}<button class="btn" onclick="window.print()">🖨️ Imprimer</button></div>`, { help: 'fiche' });
+    const ok = v.querySelector('#ficheOk');
+    if (ok) ok.addEventListener('click', () => { App.veille.mark('fiche'); R.go('/veille'); });
   });
 
   /* ---------- Glossaire ---------- */

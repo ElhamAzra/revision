@@ -187,4 +187,72 @@
     const cur = v.querySelector('.path-step.cur');
     if (cur && doneN > 0) setTimeout(() => cur.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
   });
+
+  /* ---------- Veille du concours : 30 minutes ciblées ---------- */
+  const veille = (App.veille = {
+    state() {
+      const st = App.store.state;
+      if (!st.veille || st.veille.day !== U.dayKey()) st.veille = { day: U.dayKey(), done: {}, t0: Date.now() };
+      return st.veille;
+    },
+    mark(key) { veille.state().done[key] = veille.state().done[key] || 'ok'; App.store.save(); }
+  });
+
+  const CHECK = ['Convocation et pièce d\'identité', 'Deux stylos (bleu/noir), crayon, gomme, règle', 'Montre (le téléphone sera interdit)', 'Eau et un en-cas', 'Itinéraire et heure d\'arrivée (30 min d\'avance)', 'Réveil réglé, 7 à 8 h de sommeil'];
+
+  R.add('/veille', () => {
+    App.layout.setTitle('Veille du concours');
+    const v0 = veille.state();
+    const d = v0.done;
+    const errs = App.progress.errors().length;
+    const ex = App.store.state.settings.examDate;
+    const dl = U.daysBetween(U.dayKey(), ex);
+    const nm = App.backup.name();
+    const steps = [
+      { key: 'fiche', ico: '⚡', title: 'Relire la fiche dernière heure', min: 8, desc: 'Tableaux de masques, ports, AD/OSPF, commandes Linux, RAID, sauvegardes… tout l\'essentiel sur une page.', href: '#/fiche?v=1', cta: 'Ouvrir la fiche', done: !!d.fiche },
+      { key: 'erreurs', ico: '🩹', title: 'Tes dernières erreurs', min: 7, desc: errs ? `Rejoue jusqu'à 10 de tes ${errs} erreurs : ce sont tes pièges personnels.` : 'Aucune erreur en attente 👌', href: errs ? '#/erreurs?go=1&v=1' : null, inline: !errs, cta: errs ? 'Rejouer mes erreurs' : '✓ Continuer', done: !!d.erreurs },
+      { key: 'cartes', ico: '🃏', title: 'Les 20 cartes les plus fragiles', min: 7, desc: 'Les cartes que tu oublies le plus (ou pas encore vues dans tes modules faibles).', href: '#/cartes?go=1&fragile=1', cta: 'Lancer les 20 cartes', done: !!d.cartes },
+      { key: 'exam', ico: '📝', title: 'Mini-examen de confiance', min: 8, desc: '12 questions des deux épreuves, corrigées tout de suite. Objectif : finir sur une bonne note.', href: '#/veille/exam', cta: 'Commencer', done: !!d.exam },
+      { key: 'pret', ico: '🎒', title: 'Réflexes du jour J et sac prêt', min: 3, desc: 'Les réflexes pour l\'épreuve et la check-list du matin.', inline: true, cta: '✓ Je suis prêt' + (nm ? '' : '(e)'),
+        body: `${App.content.extras.reflexes ? `<ol class="steps">${App.content.extras.reflexes.map((r) => `<li>${r}</li>`).join('')}</ol>` : ''}<div class="checklist">${CHECK.map((c, i) => `<label><input type="checkbox" data-ck="${i}"> ${c}</label>`).join('')}</div>`,
+        done: !!d.pret }
+    ];
+    const doneN = steps.filter((x) => x.done).length;
+    const all = doneN === steps.length;
+    if (all && !v0.finished) { v0.finished = true; App.game.addXP(40, false); App.store.save(); setTimeout(() => { App.fx.sound('level'); App.fx.confetti(1.4); }, 200); }
+    const v = App.ui.mount(`
+      <section class="veille-hero">
+        <div class="vh-moon">🌙</div>
+        <div class="grow">
+          <div class="lesson-kicker" style="color:#c4b5fd">Veille du concours${dl >= 0 ? ` · ${dl === 0 ? 'jour J' : dl === 1 ? 'demain' : 'J-' + dl}` : ''}</div>
+          <h1 class="mb0 mt1" style="color:#fff">30 minutes pour tout consolider</h1>
+          <p class="mb0 mt1" style="opacity:.88">Rien de nouveau ce soir : on relit, on corrige ses erreurs, on se rassure… et on va dormir.</p>
+        </div>
+        ${App.ui.ring(doneN / steps.length, 70, 7, '#c4b5fd', `${doneN}/${steps.length}`).replace('ring-bg', 'ring-bg" style="stroke:rgba(255,255,255,.18)').replace('class="ring-label"', 'class="ring-label" style="color:#fff"')}
+      </section>
+      ${all ? `<section class="luck mt2"><div class="luck-clover">🍀</div><div><div class="luck-t">Bonne chance pour le concours${nm ? ', ' + nm : ''}&nbsp;!</div><p class="mb0">Tu as fait le travail. Ferme l'application, prépare tes affaires et dors bien. Demain : lis tout le sujet, commence par ce que tu maîtrises, garde 10 minutes pour relire. 💪</p></div></section>` : ''}
+      <div class="card mt2">${path.html(steps)}</div>`, { narrow: true });
+    App.ui.hydrate(v);
+    path.bind(v, {
+      skip: (k) => { v0.done[k] = 'skip'; App.store.save(); R.resolve(); },
+      inline: (k) => { v0.done[k] = 'ok'; App.store.save(); R.resolve(); }
+    });
+  });
+
+  R.add('/veille/exam', () => {
+    const pick = (ids, n) => U.shuffle(ids.flatMap((id) => (App.content.mod(id) || { qcm: [] }).qcm)).slice(0, n);
+    const e2 = pick(['s1', 's2', 's3', 's4', 's5', 's6'], 5);
+    const gens = App.gen.list.filter((g) => ['s1', 'm0'].includes(g.mod));
+    for (let i = 0; i < 2 && gens.length; i++) e2.push(App.gen.make(U.pick(gens).id, 1));
+    const e1 = pick(['s7', 's8'], 5);
+    App.runner.start({
+      title: '📝 Mini-examen de confiance',
+      sub: '12 questions des deux épreuves. Corrigé tout de suite : chaque erreur est une chance de la corriger ce soir plutôt que demain.',
+      crumbs: [['Veille', '#/veille'], ['Mini-examen']],
+      questions: U.shuffle(e2.concat(e1)),
+      backHref: '#/veille',
+      onFinish: () => veille.mark('exam'),
+      nextHref: '#/veille', nextLabel: '🌙 Suite de la veille ▶'
+    });
+  });
 })();

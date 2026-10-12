@@ -157,7 +157,7 @@
   /* ---------- Carnet d'erreurs ---------- */
   R.add('/erreurs', (p, query) => {
     App.layout.setTitle('Carnet d\'erreurs');
-    if (query.go != null) return replay(query.mod || null, query.g != null && App.guided.active(query.mod));
+    if (query.go != null) return replay(query.mod || null, query.g != null && App.guided.active(query.mod), query.v != null);
     const list = App.progress.errors();
     const byMod = {};
     list.forEach((e) => (byMod[e.mod] = (byMod[e.mod] || 0) + 1));
@@ -173,8 +173,8 @@
     if (cb) cb.addEventListener('click', () => App.ui.confirm('<h3>Vider le carnet ?</h3><p>Les erreurs enregistrées seront supprimées.</p>', 'Vider', () => { App.store.state.errors = {}; App.store.save(); R.resolve(); }, true));
   });
 
-  function replay(mod, g) {
-    const list = App.progress.errors(mod).slice(0, 20).map((e) => {
+  function replay(mod, g, vl) {
+    const list = App.progress.errors(mod).slice(0, vl ? 10 : 20).map((e) => {
       const q = JSON.parse(JSON.stringify(e.q));
       delete q._order; delete q._rorder;
       return q;
@@ -186,9 +186,9 @@
       sub: 'Deux bonnes réponses d\'affilée sur une erreur = elle est vaincue.',
       crumbs: [['Carnet d\'erreurs', '#/erreurs'], ['Rejouer']],
       questions: U.shuffle(list),
-      backHref: g ? '#/seance' : '#/erreurs',
-      onFinish: g ? () => App.guided.mark('erreurs', mod) : null,
-      nextHref: g ? '#/seance' : null, nextLabel: '🧭 Suite de la séance ▶',
+      backHref: vl ? '#/veille' : g ? '#/seance' : '#/erreurs',
+      onFinish: vl ? () => App.veille.mark('erreurs') : g ? () => App.guided.mark('erreurs', mod) : null,
+      nextHref: vl ? '#/veille' : g ? '#/seance' : null, nextLabel: vl ? '🌙 Suite de la veille ▶' : '🧭 Suite de la séance ▶',
       retry: () => R.resolve()
     });
   }
