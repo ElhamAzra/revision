@@ -70,7 +70,7 @@
     ins.deferred = e;
     App.bus.emit('installable');
     const cur = App.router.current && App.router.current.path;
-    if (cur === '/' || cur === '/profil' || cur === '/apropos') App.router.resolve();
+    if ((cur === '/' || cur === '/profil' || cur === '/apropos') && !document.querySelector('.modal-bg')) App.router.resolve();
   });
   window.addEventListener('appinstalled', () => { ins.deferred = null; App.game && App.game.award && App.game.award('installed'); });
 

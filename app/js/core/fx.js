@@ -77,7 +77,7 @@
       document.body.appendChild(cv);
       const g = cv.getContext('2d');
       g.scale(dpr, dpr);
-      const colors = ['#5b4bff', '#ff7a1a', '#10a861', '#ffd23f', '#ff4d6d', '#1f86e8'];
+      const colors = document.documentElement.dataset.palette === 'niger' ? ['#e05206', '#ffffff', '#0b8a3e', '#f39233', '#16a653', '#e05206'] : ['#5b4bff', '#ff7a1a', '#10a861', '#ffd23f', '#ff4d6d', '#1f86e8'];
       const n = Math.round(140 * (power || 1));
       const W = window.innerWidth, H = window.innerHeight;
       const parts = [];

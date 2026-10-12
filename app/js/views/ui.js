@@ -54,12 +54,14 @@
       const sizes = [['s', 'A', '.85rem'], ['m', 'A', '1rem'], ['l', 'A', '1.2rem'], ['xl', 'A', '1.4rem']];
       return `<div class="typo-ctl">
         <div><div class="lbl">Police</div><div class="font-pick">${fonts.map(([k, n, d]) => `<button type="button" data-font="${k}" class="${(st.font || 'nunito') === k ? 'on' : ''}"><span class="fp-a fp-${k}">Aa</span><span><b>${n}</b><small>${d}</small></span></button>`).join('')}</div></div>
+        <div><div class="lbl">Couleurs</div><div class="pal-pick">${[['violet', '<span class="pal-sw"><i style="background:#5b4bff"></i><i style="background:#ff7a1a"></i></span>', 'Violet & orange'], ['niger', '<span class="pal-flag"></span>', 'Niger 🇳🇪']].map(([k, sw, n]) => `<button type="button" data-pal="${k}" class="${(st.palette || 'violet') === k ? 'on' : ''}">${sw}${n}</button>`).join('')}</div></div>
         <div><div class="lbl">Taille du texte</div><div class="seg size-pick">${sizes.map(([k, a, fs]) => `<button type="button" data-size="${k}" class="${(st.textSize || 'm') === k ? 'on' : ''}" style="font-size:${fs}" aria-label="Taille ${k.toUpperCase()}">${a}</button>`).join('')}</div></div>
       </div>`;
     },
     bindTypo(root) {
       const st = App.store.state.settings;
       U.$$('[data-font]', root).forEach((b) => b.addEventListener('click', () => { st.font = b.dataset.font; App.store.save(); ui.applyTypo(); U.$$('[data-font]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
+      U.$$('[data-pal]', root).forEach((b) => b.addEventListener('click', () => { st.palette = b.dataset.pal; App.store.save(); ui.applyTheme(); U.$$('[data-pal]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
       U.$$('[data-size]', root).forEach((b) => b.addEventListener('click', () => { st.textSize = b.dataset.size; App.store.save(); ui.applyTypo(); U.$$('[data-size]', root).forEach((x) => x.classList.toggle('on', x === b)); }));
     },
 
@@ -157,9 +159,11 @@
     applyTheme() {
       const pref = App.store.state.settings.theme;
       const dark = pref === 'dark' || (pref === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      const root = document.documentElement;
+      root.dataset.theme = dark ? 'dark' : 'light';
+      root.dataset.palette = App.store.state.settings.palette || 'violet';
       const meta = document.querySelector('meta[name=theme-color]');
-      if (meta) meta.setAttribute('content', dark ? '#0b0e1d' : '#5b4bff');
+      if (meta) meta.setAttribute('content', dark ? '#0b0e1d' : root.dataset.palette === 'niger' ? '#e05206' : '#5b4bff');
     },
 
     /* Petite aide : bouton « retour » cohérent */
