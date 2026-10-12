@@ -1,0 +1,126 @@
+/* Vue : composants d'interface réutilisables (montage, toasts, modales, anneaux, barres, binaire). */
+(function () {
+  'use strict';
+  const App = window.App;
+  const U = App.util;
+
+  const ui = (App.ui = {
+    root: () => document.getElementById('view'),
+
+    /* Monte le HTML d'une page puis hydrate les widgets interactifs */
+    mount(html, opts) {
+      const v = ui.root();
+      v.className = 'view' + (opts && opts.wide ? ' wide' : '');
+      v.innerHTML = html;
+      ui.hydrate(v);
+      return v;
+    },
+
+    hydrate(root) {
+      if (App.widgets) App.widgets.hydrate(root);
+      U.$$('.reveal-btn', root).forEach((b) => {
+        if (b._bound) return;
+        b._bound = true;
+        b.addEventListener('click', () => {
+          const box = b.closest('.reveal');
+          box.classList.toggle('on');
+          b.textContent = box.classList.contains('on') ? 'Masquer' : 'Voir la réponse';
+        });
+      });
+    },
+
+    toast(icon, html, kind, ms) {
+      let wrap = document.querySelector('.toasts');
+      if (!wrap) {
+        wrap = U.el('<div class="toasts" aria-live="polite"></div>');
+        document.body.appendChild(wrap);
+      }
+      const t = U.el(`<div class="toast ${kind || ''}"><div class="ti">${icon}</div><div>${html}</div></div>`);
+      wrap.appendChild(t);
+      setTimeout(() => {
+        t.classList.add('out');
+        setTimeout(() => t.remove(), 320);
+      }, ms || 3200);
+    },
+
+    modal(html, opts) {
+      opts = opts || {};
+      const bg = U.el(`<div class="modal-bg"><div class="modal ${opts.wide ? 'wide' : ''}" role="dialog" aria-modal="true">${html}</div></div>`);
+      const close = () => {
+        bg.remove();
+        document.removeEventListener('keydown', onKey);
+        if (opts.onClose) opts.onClose();
+      };
+      const onKey = (e) => { if (e.key === 'Escape') close(); };
+      bg.addEventListener('click', (e) => {
+        if (e.target === bg && !opts.locked) close();
+        if (e.target.closest('[data-close]')) close();
+      });
+      document.addEventListener('keydown', onKey);
+      document.body.appendChild(bg);
+      ui.hydrate(bg);
+      const btn = bg.querySelector('.btn.primary');
+      if (btn) setTimeout(() => btn.focus(), 50);
+      return { el: bg, close };
+    },
+
+    confirm(html, okLabel, onOk, danger) {
+      const m = ui.modal(`${html}<div class="row mt2" style="justify-content:flex-end"><button class="btn ghost" data-close>Annuler</button><button class="btn ${danger ? 'ko' : 'primary'}" data-ok>${okLabel}</button></div>`);
+      m.el.querySelector('[data-ok]').addEventListener('click', () => { m.close(); onOk(); });
+      return m;
+    },
+
+    ring(pct, size, stroke, color, label) {
+      size = size || 64; stroke = stroke || 7;
+      const r = (size - stroke) / 2, c = 2 * Math.PI * r;
+      const off = c * (1 - U.clamp(pct || 0, 0, 1));
+      return `<span class="ring" style="width:${size}px;height:${size}px">
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+          <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke-width="${stroke}"/>
+          <circle class="ring-fg" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color || 'var(--primary)'}" stroke-width="${stroke}" stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
+        </svg><span class="ring-label" style="font-size:${Math.max(11, size / 4.6)}px">${label != null ? label : Math.round((pct || 0) * 100) + '%'}</span></span>`;
+    },
+
+    bar(pct, cls) {
+      return `<div class="bar ${cls || ''}"><i style="width:${Math.round(U.clamp(pct || 0, 0, 1) * 100)}%"></i></div>`;
+    },
+
+    /* Binaire coloré d'une adresse 32 bits selon un préfixe */
+    bits32(n, prefix, opts) {
+      return App.md.bits(App.ip.bin(n), prefix, opts);
+    },
+
+    modIcon(m) {
+      return `<span class="m-ico" style="--mc:${m.color}">${m.icon}</span>`;
+    },
+
+    /* Applique le thème (auto = préférence du système) */
+    applyTheme() {
+      const pref = App.store.state.settings.theme;
+      const dark = pref === 'dark' || (pref === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      const meta = document.querySelector('meta[name=theme-color]');
+      if (meta) meta.setAttribute('content', dark ? '#0b0e1d' : '#5b4bff');
+    },
+
+    /* Petite aide : bouton « retour » cohérent */
+    crumbs(items) {
+      return '<div class="crumbs">' + items.map((i) => (i[1] ? `<a href="${i[1]}">${i[0]}</a>` : `<span>${i[0]}</span>`)).join(' › ') + '</div>';
+    },
+
+    /* Lier des raccourcis clavier pour la page courante */
+    keys(map) {
+      const h = (e) => {
+        if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && e.key !== 'Enter' && e.key !== 'Escape') return;
+        if (e.target && /^(BUTTON|A|SUMMARY)$/.test(e.target.tagName) && (e.key === 'Enter' || e.key === ' ')) return; // activation native
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const fn = map[e.key] || map[e.key.toLowerCase()];
+        if (fn) { fn(e); }
+      };
+      document.addEventListener('keydown', h);
+      const off = () => document.removeEventListener('keydown', h);
+      App.router.onLeave(off);
+      return off;
+    }
+  });
+})();

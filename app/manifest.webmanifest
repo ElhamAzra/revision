@@ -1,0 +1,12 @@
+{
+  "name": "Révision Concours MEF — Systèmes & Réseaux",
+  "short_name": "Révision MEF",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0e1d",
+  "theme_color": "#5b4bff",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#5b4bff">
+  <meta name="description" content="Révision interactive hors ligne — Concours MEF Niger, option Systèmes & Réseaux.">
+  <title>Révision MEF · Systèmes & Réseaux</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235b4bff'/%3E%3Cstop offset='1' stop-color='%23ff7a1a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='800' font-size='26' text-anchor='middle' fill='white'%3EIP%3C/text%3E%3C/svg%3E">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div style="min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;color:#6a7090">
+    <div style="text-align:center">
+      <div style="font-size:3rem">📡</div>
+      <p>Chargement de la révision…</p>
+      <noscript><p style="color:#e5383b"><b>JavaScript est désactivé.</b> Active-le pour utiliser l'application (aucune connexion Internet n'est nécessaire).</p></noscript>
+    </div>
+  </div>
+
+  <!-- Noyau -->
+  <script src="js/core/util.js"></script>
+  <script src="js/core/router.js"></script>
+  <script src="js/core/fx.js"></script>
+  <script src="js/lib/ipcalc.js"></script>
+  <script src="js/lib/md.js"></script>
+  <!-- Modèles -->
+  <script src="js/models/store.js"></script>
+  <script src="js/models/content.js"></script>
+  <script src="js/models/srs.js"></script>
+  <script src="js/models/game.js"></script>
+  <script src="js/models/progress.js"></script>
+  <!-- Vues -->
+  <script src="js/views/ui.js"></script>
+  <script src="js/views/layout.js"></script>
+  <script src="js/core/quiz.js"></script>
+  <script src="js/views/question.js"></script>
+  <script src="js/core/gen.js"></script>
+  <!-- Widgets interactifs -->
+  <script src="js/widgets/core.js"></script>
+  <script src="js/widgets/ip.js"></script>
+  <script src="js/widgets/net.js"></script>
+  <script src="js/widgets/telecom.js"></script>
+  <script src="js/widgets/sys.js"></script>
+  <!-- Générateurs d'exercices -->
+  <script src="js/generators/ip.js"></script>
+  <script src="js/generators/net.js"></script>
+  <script src="js/generators/telecom.js"></script>
+  <script src="js/generators/sys.js"></script>
+  <!-- Contenu pédagogique -->
+  <script src="data/m0-binaire.js"></script>
+  <script src="data/s1-adressage.js"></script>
+  <script src="data/s2-routage.js"></script>
+  <script src="data/s3-commutation.js"></script>
+  <script src="data/s4-services.js"></script>
+  <script src="data/s5-securite.js"></script>
+  <script src="data/s6-telecoms.js"></script>
+  <script src="data/s7-linux.js"></script>
+  <script src="data/s8-windows.js"></script>
+  <script src="data/extras.js"></script>
+  <script src="data/examen.js"></script>
+  <!-- Contrôleurs -->
+  <script src="js/controllers/runner.js"></script>
+  <script src="js/controllers/home.js"></script>
+  <script src="js/controllers/course.js"></script>
+  <script src="js/controllers/cards.js"></script>
+  <script src="js/controllers/practice.js"></script>
+  <script src="js/controllers/exercises.js"></script>
+  <script src="js/controllers/exam.js"></script>
+  <script src="js/controllers/misc.js"></script>
+  <!-- Démarrage -->
+  <script src="js/main.js"></script>
+</body>
+</html>
