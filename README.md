@@ -24,7 +24,7 @@ La version **en ligne** s'installe sur l'écran d'accueil et fonctionne ensuite 
 - **iPhone / iPad** (Safari) : bouton Partager → « Sur l'écran d'accueil ».
 - **Ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
 
-**Mise en ligne avec GitHub Pages** (une seule fois) : le dépôt doit être **public** (ou compte GitHub payant pour un dépôt privé). Puis *Settings → Pages → Build and deployment → Source : GitHub Actions*. À chaque mise à jour de `main`, le workflow `.github/workflows/pages.yml` publie le dossier `app/` à l'adresse `https://elhamazra.github.io/revision/` (et le fichier unique à `…/revision-concours-mef.html`). Alternative sans rendre le dépôt public : glisser le dossier `app/` sur [Netlify Drop](https://app.netlify.com/drop) (gratuit) et remplacer `App.ONLINE_URL` dans `app/js/core/util.js` par l'adresse obtenue.
+**Version en ligne** : **https://revision-app-zeta.vercel.app** (hébergée gratuitement sur Vercel, dépôt public ou privé). Chaque mise à jour de `main` est publiée automatiquement ; la configuration est dans `vercel.json` (construction du fichier unique, dossier publié `app/`, en-têtes du service worker). Le fichier unique est aussi disponible à `https://revision-app-zeta.vercel.app/revision-concours-mef.html`. Si l'adresse change, mettre à jour `App.ONLINE_URL` dans `app/js/core/util.js`.
 
 ## Confort d'utilisation
 
