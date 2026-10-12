@@ -31,7 +31,7 @@ Au **premier lancement**, un court assistant demande ton prénom, ta date de con
 - **Générateurs d'exercices infinis**, corrigés pas à pas : binaire, sous-réseaux, VLSM, agrégation, wildcard, IPv6/EUI-64, ports, TCP, OSPF, table de routage, domaines, décibels, Shannon, VoIP, E1, chmod, umask, cron, RAID, sauvegardes…
 - **Labs** : octet interactif, visualiseur de sous-réseau (ET logique coloré), planificateur VLSM, agrégation, atelier IPv6, simulateur de switch, élection STP, simulateur d'ACL, calculateurs TCP, dB/bilan de liaison, VoIP, chmod, cron, RAID.
 - **Exercices type concours** du plan (énoncé, corrigé, barème, auto-évaluation, parties auto-corrigées).
-- **Examens** : sujet blanc de la séance 9 (2 h, auto-évaluation au barème) et examen express auto-corrigé, toujours différent ; calcul E1/E2, moyenne (2×E1 + 3×E2)/5 et alerte « note ≤ 5 éliminatoire ».
+- **Examens** : 3 sujets blancs complets (Agadez — séance 9 du plan, Zinder, Maradi ; 2 h, auto-évaluation au barème) et examen express auto-corrigé, toujours différent ; calcul E1/E2, moyenne (2×E1 + 3×E2)/5 et alerte « note ≤ 5 éliminatoire ».
 - **Motivation** : XP, niveaux, série de jours 🔥, objectif quotidien, missions du jour, 26 badges, défis éclair de 60 s, carnet d'erreurs automatique.
 
 ## Pour les développeurs

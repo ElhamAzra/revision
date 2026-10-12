@@ -647,6 +647,15 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .defi-vs span { color: var(--muted); font-family: var(--mono); font-size: .85rem; }
 .defi-vs .vs { font-family: var(--font-display); font-weight: 800; color: var(--accent); font-size: 1.2rem; }
 
+.blanc-bar { position: sticky; top: .5rem; z-index: 5; }
+:root[data-nav="mobile"] .blanc-bar { top: calc(58px + env(safe-area-inset-top)); padding: .55rem .7rem; }
+@media (max-width: 600px) {
+  .blanc-bar .row { flex-wrap: nowrap; gap: .4rem; }
+  .blanc-bar #phaseLbl { display: none; }
+  .blanc-bar .btn { padding: .35rem .6rem; font-size: .8rem; min-height: 2.1rem; }
+  .blanc-bar .timer { font-size: 1rem; padding: .2rem .5rem; }
+}
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);
@@ -9943,6 +9952,148 @@ fi`) },
 })();
 
 </script>
+  <script>
+/* data/examens2.js */
+/* Sujets blancs supplémentaires (même format que le sujet d'Agadez) : Zinder et Maradi.
+   Partie I (réseaux et télécoms) sur 24 points → E2 ; Partie II (systèmes) sur 16 points → E1. */
+(function () {
+  'use strict';
+  const { table, code } = App.md;
+
+  const zinder = {
+    id: 'zinder',
+    title: 'Sujet blanc B — Zinder',
+    sub: 'Épreuves 1 et 2 · 2 h · Partie I (réseaux et télécoms) 24 points → note E2 ; Partie II (systèmes) 16 points → note E1.',
+    minutes: 120,
+    theme: 'Direction régionale des Impôts : VLSM /23, OSPF et secours, NAT/ACL Wi-Fi, STP, Wi-Fi, IPv6 ; Linux, AD/GPO, RAID 6, incrémentielles.',
+    context: `<p><b>Contexte.</b> La <b>Direction régionale des Impôts de Zinder</b> (deux bâtiments A et B, 300 agents, une recette, un Wi-Fi visiteurs) reçoit le bloc <b>10.30.0.0/23</b>. Elle est reliée au siège de Niamey par une <b>fibre opérateur à 100 Mbit/s</b> et, en secours, par un <b>lien satellite de 2 Mbit/s</b> ; un second lien la relie au bureau de Maradi. Le routage interne utilise <b>OSPF</b>. Tu es l'administrateur systèmes et réseaux de la direction.</p>
+<p class="small muted">Gestion du temps conseillée : Partie I : 55 min · Partie II : 35 min · relecture : 10 min.</p>`,
+    sections: [
+      {
+        id: 'I', title: 'PARTIE I — Réseaux et télécommunications', max: 24, note: 'Note E2 = Partie I × 20 / 24',
+        items: [
+          { q: '<b>Q1 a.</b> Bloc 10.30.0.0/23 : nombre total d\'adresses et masque en notation décimale.', pts: 1, fields: [{ label: 'Nombre d\'adresses', kind: 'num', a: 512 }, { label: 'Masque', kind: 'mask', a: '255.255.254.0' }], corr: '<p>32 − 23 = 9 bits d\'hôte → 2<sup>9</sup> = <b>512</b> adresses ; masque <b>255.255.254.0</b> (3<sup>e</sup> octet : 11111110 = 254).</p>' },
+          { q: '<b>Q1 b.</b> Plan VLSM (du plus grand au plus petit besoin, en partant de 10.30.0.0). Besoins (passerelle comprise) : Bâtiment A 200 · Bâtiment B 100 · Recette 50 · Wi-Fi visiteurs 25 · Serveurs 12 · deux liaisons WAN (Niamey puis Maradi).', pts: 4, fields: [{ label: 'Bâtiment A', kind: 'cidr', a: '10.30.0.0/24' }, { label: 'Bâtiment B', kind: 'cidr', a: '10.30.1.0/25' }, { label: 'Recette', kind: 'cidr', a: '10.30.1.128/26' }, { label: 'Wi-Fi visiteurs', kind: 'cidr', a: '10.30.1.192/27' }, { label: 'Serveurs', kind: 'cidr', a: '10.30.1.224/28' }, { label: 'WAN Niamey', kind: 'cidr', a: '10.30.1.240/30' }, { label: 'WAN Maradi', kind: 'cidr', a: '10.30.1.244/30' }],
+            corr: table(['Réseau', 'Besoin → taille', 'Adresse / préfixe', 'Plage utilisable', 'Broadcast'], [['Bâtiment A', '200 + 2 → 256 (/24)', '10.30.0.0/24', '10.30.0.1 → 10.30.0.254', '10.30.0.255'], ['Bâtiment B', '100 + 2 → 128 (/25)', '10.30.1.0/25', '.1 → .126', '10.30.1.127'], ['Recette', '50 + 2 → 64 (/26)', '10.30.1.128/26', '.129 → .190', '10.30.1.191'], ['Wi-Fi visiteurs', '25 + 2 → 32 (/27)', '10.30.1.192/27', '.193 → .222', '10.30.1.223'], ['Serveurs', '12 + 2 → 16 (/28)', '10.30.1.224/28', '.225 → .238', '10.30.1.239'], ['WAN Niamey', '2 + 2 → 4 (/30)', '10.30.1.240/30', '.241 → .242', '10.30.1.243'], ['WAN Maradi', '2 + 2 → 4 (/30)', '10.30.1.244/30', '.245 → .246', '10.30.1.247']]) + '<p>Total 504 adresses sur 512 ; reste 10.30.1.248/29. Barème : 0,5 par ligne juste (+0,5 pour l\'ordre décroissant).</p>' },
+          { q: '<b>Q1 c.</b> Pour le réseau de la Recette : adresse de broadcast et dernière adresse utilisable (attribuée à l\'imprimante réseau).', pts: 1, fields: [{ label: 'Broadcast', kind: 'ip', a: '10.30.1.191' }, { label: 'Dernière utilisable', kind: 'ip', a: '10.30.1.190' }], corr: '<p>Bloc de 64 : 128 + 64 − 1 = <b>10.30.1.191</b> ; dernière utilisable <b>10.30.1.190</b>.</p>' },
+          { q: '<b>Q1 d.</b> Quelle route résumée unique le siège doit-il connaître pour joindre tout Zinder ?', pts: 1, fields: [{ kind: 'cidr', a: '10.30.0.0/23' }], corr: '<p>Tout le plan est contenu dans le bloc attribué : <b>10.30.0.0/23</b> (255.255.254.0).</p>' },
+          { q: '<b>Q2 a.</b> Configure OSPF (processus 1, aire 0) sur R-ZINDER pour annoncer tous ses réseaux avec une seule commande network, sans envoyer d\'Hello vers les LAN.', pts: 2, corr: code(`router ospf 1
+ router-id 1.1.1.30
+ network 10.30.0.0 0.0.1.255 area 0      ! wildcard d'un /23
+ passive-interface default
+ no passive-interface g0/1                ! WAN Niamey
+ no passive-interface g0/2                ! WAN Maradi`) + '<p>Barème : wildcard 0.0.1.255 (1 pt), passive-interface sur les LAN (1 pt).</p>' },
+          { q: '<b>Q2 b.</b> Coût OSPF du lien satellite de secours à 2 Mbit/s (bande passante de référence 100 Mbit/s) ? Quel lien OSPF utilise-t-il normalement ?', pts: 1.5, fields: [{ label: 'Coût du lien satellite', kind: 'num', a: 50 }], corr: '<p>Coût = 10<sup>8</sup> / 2·10<sup>6</sup> = <b>50</b> ; la fibre à 100 Mbit/s coûte 1 → OSPF choisit la <b>fibre</b> (coût total le plus faible) ; le satellite ne sert qu\'en cas de panne.</p>' },
+          { q: '<b>Q2 c.</b> On ajoute une route statique de secours vers Niamey qui ne doit servir que si OSPF ne fournit plus de route. Quelle distance administrative lui donner ? Pourquoi ?', pts: 1, fields: [{ label: 'Distance administrative (exemple)', kind: 'num', a: 183, tol: 72, show: 'entre 111 et 255 (ex. 200)' }], corr: '<p>Une valeur <b>supérieure à 110</b> (AD d\'OSPF), par exemple 200 : c\'est une <b>route flottante</b>, installée seulement si la route OSPF disparaît. <code>ip route 0.0.0.0 0.0.0.0 &lt;satellite&gt; 200</code>.</p>' },
+          { q: '<b>Q3 a.</b> Le Wi-Fi visiteurs (10.30.1.192/27) sort sur Internet par l\'interface g0/3 de R-ZINDER (une seule adresse publique). Configure la traduction. Quel masque générique dans l\'ACL ?', pts: 2, fields: [{ label: 'Masque générique (wildcard)', kind: 'ip', a: '0.0.0.31' }], corr: code(`access-list 10 permit 10.30.1.192 0.0.0.31
+interface g0/0.30
+ ip nat inside
+interface g0/3
+ ip nat outside
+ip nat inside source list 10 interface g0/3 overload   ! PAT`) + '<p>Wildcard = 255.255.255.255 − 255.255.255.224 = <b>0.0.0.31</b>. PAT (overload) : plusieurs postes partagent l\'adresse publique grâce aux ports.</p>' },
+          { q: '<b>Q3 b.</b> Les visiteurs ne doivent atteindre <b>aucun</b> réseau interne 10.0.0.0/8 mais doivent aller sur Internet. Écris l\'ACL étendue et indique où l\'appliquer.', pts: 1.5, corr: code(`access-list 110 deny   ip 10.30.1.192 0.0.0.31 10.0.0.0 0.255.255.255
+access-list 110 permit ip 10.30.1.192 0.0.0.31 any
+interface g0/0.30
+ ip access-group 110 in`) + '<p>ACL étendue au plus près de la <b>source</b>, en entrée de la sous-interface Wi-Fi. Sans la ligne permit, le <b>deny implicite</b> bloquerait aussi Internet.</p>' },
+          { q: '<b>Q3 c.</b> Quel type d\'enregistrement DNS indique le serveur de messagerie du domaine ? Et pour un alias (intranet → srv-web) ?', pts: 1, fields: [{ label: 'Messagerie', kind: 'text', a: 'MX' }, { label: 'Alias', kind: 'text', a: 'CNAME' }], corr: '<p><b>MX</b> (avec une priorité) pour la messagerie ; <b>CNAME</b> pour un alias ; A / AAAA pour une adresse ; PTR pour la résolution inverse.</p>' },
+          { q: '<b>Q4 a.</b> Trois commutateurs : SW1 (priorité 32768, MAC 00:1A:…), SW2 (priorité 24576, MAC 00:2B:…), SW3 (priorité 32768, MAC 00:0C:…). Lequel est pont racine ? Comment rendre SW1 racine ?', pts: 1.5, fields: [{ label: 'Pont racine', kind: 'select', opts: ['SW1', 'SW2', 'SW3'], a: 1 }], corr: '<p>Plus petit identifiant de pont = priorité puis MAC → <b>SW2</b> (24576). Pour SW1 : <code>spanning-tree vlan 1-4094 priority 4096</code> (ou <code>spanning-tree vlan 1 root primary</code>).</p>' },
+          { q: '<b>Q4 b.</b> Les bâtiments A et B sont reliés par deux câbles. Que configurer pour utiliser les deux à la fois ? Quel mode LACP ?', pts: 1, corr: '<p>Un <b>EtherChannel</b> (agrégation) : STP voit un seul lien logique, les deux câbles transportent du trafic et se secourent. LACP (802.3ad) en mode <b>active</b> (au moins d\'un côté ; active/active recommandé).</p>' },
+          { q: '<b>Q5 a.</b> Wi-Fi : quelle sécurité pour les agents ? Pour les visiteurs ? Quels canaux sur 2,4 GHz pour 3 points d\'accès voisins ?', pts: 1.5, corr: '<p>Agents : <b>WPA2/WPA3-Entreprise</b> (802.1X + serveur RADIUS, identifiants AD). Visiteurs : SSID séparé dans son VLAN, WPA3-Personnel ou portail captif, isolé du réseau interne. Canaux <b>1, 6 et 11</b> (non chevauchants).</p>' },
+          { q: '<b>Q5 b.</b> Capacité théorique de Shannon d\'un canal Wi-Fi de 20 MHz avec S/N = 30 dB (log₂ 1001 ≈ 9,97), en Mbit/s ?', pts: 1.5, fields: [{ kind: 'num', a: 199.4, rel: 0.02, show: '≈ 199,4 Mbit/s' }], corr: '<p>30 dB → S/N = 1000. C = 20·10<sup>6</sup> × log₂(1001) ≈ 20 × 9,97 ≈ <b>199,4 Mbit/s</b>.</p>' },
+          { q: '<b>Q5 c.</b> Un point d\'accès émet à 20 dBm. Puissance en mW ?', pts: 1, fields: [{ kind: 'num', a: 100 }], corr: '<p>0 dBm = 1 mW ; +10 dB = ×10 → 10 dBm = 10 mW, 20 dBm = <b>100 mW</b>.</p>' },
+          { q: '<b>Q5 d.</b> La direction reçoit le préfixe IPv6 2001:db8:30::/48. Combien de sous-réseaux /64 peut-elle créer ?', pts: 1.5, fields: [{ kind: 'num', a: 65536 }], corr: '<p>64 − 48 = 16 bits de sous-réseau → 2<sup>16</sup> = <b>65 536</b> sous-réseaux /64 (de 2001:db8:30:0::/64 à 2001:db8:30:ffff::/64).</p>' }
+        ]
+      },
+      {
+        id: 'II', title: 'PARTIE II — Administration des systèmes', max: 16, note: 'Note E1 = Partie II × 20 / 16 — rappel : note ≤ 5 éliminatoire',
+        items: [
+          { q: '<b>Q6 a.</b> Dossier /srv/impots : propriétaire rwx, groupe impots r-x, autres aucun droit, et les nouveaux fichiers doivent hériter du groupe. Valeur octale à donner avec chmod ?', pts: 1.5, fields: [{ label: 'Octal', kind: 'text', a: '2750' }], corr: '<p>rwx r-x --- = 750, plus le bit <b>SGID</b> (2) pour l\'héritage du groupe → <code>chmod 2750 /srv/impots</code> (après <code>chown root:impots /srv/impots</code>).</p>' },
+          { q: '<b>Q6 b.</b> Avec un umask de 027, quels sont les droits d\'un nouveau fichier ? D\'un nouveau dossier ?', pts: 1, fields: [{ label: 'Fichier', kind: 'text', a: '640' }, { label: 'Dossier', kind: 'text', a: '750' }], corr: '<p>Fichier : 666 − 027 → <b>640</b> (rw-r-----) ; dossier : 777 − 027 → <b>750</b> (rwxr-x---).</p>' },
+          { q: '<b>Q6 c.</b> Ligne de crontab : sauvegarde tous les jours à 2 h 30 (les 5 champs).', pts: 1, fields: [{ kind: 'cron', a: '30 2 * * *', wide: true, ph: 'min heure jm mois js' }], corr: '<p><code>30 2 * * * /opt/sauvegarde.sh</code> (minute 30, heure 2).</p>' },
+          { q: '<b>Q6 d.</b> Le service sshd ne répond plus. Commandes pour : voir son état, le redémarrer, l\'activer au démarrage, afficher ses 50 derniers messages de journal.', pts: 1.5, corr: code(`systemctl status sshd
+systemctl restart sshd
+systemctl enable sshd
+journalctl -u sshd -n 50`) },
+          { q: '<b>Q6 e.</b> Sécuriser SSH : interdire la connexion directe de root et l\'authentification par mot de passe. Quel fichier, quelles directives, et que faut-il préparer avant ?', pts: 1, corr: '<p>/etc/ssh/sshd_config : <code>PermitRootLogin no</code>, <code>PasswordAuthentication no</code>, puis <code>systemctl reload sshd</code>. Avant : déployer les <b>clés</b> (<code>ssh-keygen</code>, <code>ssh-copy-id</code>) et garder une session ouverte pour tester.</p>' },
+          { q: '<b>Q7 a.</b> Cite les 5 rôles FSMO et leur portée (forêt ou domaine).', pts: 1.5, corr: '<p>Forêt : <b>maître de schéma</b>, <b>maître d\'attribution des noms de domaine</b>. Domaine : <b>maître RID</b>, <b>émulateur PDC</b> (mots de passe, heure, verrouillages), <b>maître d\'infrastructure</b>.</p>' },
+          { q: '<b>Q7 b.</b> Une GPO liée au domaine impose un fond d\'écran bleu, une GPO liée à l\'OU Zinder un fond vert (aucune option « appliqué »). Résultat pour un poste de l\'OU Zinder ?', pts: 1, fields: [{ kind: 'select', opts: ['Bleu', 'Vert', 'Aucun fond imposé', 'Aléatoire'], a: 1 }], corr: '<p>Ordre <b>LSDOU</b> (local, site, domaine, OU) : la dernière appliquée gagne → <b>vert</b> (sauf si la GPO de domaine était « appliquée / enforced »).</p>' },
+          { q: '<b>Q7 c.</b> Des postes de Zinder n\'arrivent plus à ouvrir de session : leur horloge a 9 minutes d\'avance. Écart maximal toléré par Kerberos (en minutes) ? Quel rôle sert de référence de temps ?', pts: 1.5, fields: [{ label: 'Écart maximal (min)', kind: 'num', a: 5 }], corr: '<p><b>5 minutes</b> par défaut. Référence : l\'<b>émulateur PDC</b> du domaine racine (lui-même synchronisé sur une source NTP fiable) ; les postes se synchronisent sur les DC.</p>' },
+          { q: '<b>Q7 d.</b> Groupe de travail ou domaine pour 300 postes ? Justifie en deux arguments.', pts: 1, corr: '<p><b>Domaine</b> : comptes et mots de passe centralisés (une seule identité par agent), GPO pour configurer tous les postes, gestion des droits par groupes, audit ; un groupe de travail (comptes locaux sur chaque poste) n\'est gérable qu\'en dessous de ~10 postes.</p>' },
+          { q: '<b>Q8 a.</b> Serveur de fichiers en RAID 6 avec 6 disques de 4 To : capacité utile et nombre de pannes de disque tolérées ?', pts: 1.5, fields: [{ label: 'Capacité utile (To)', kind: 'num', a: 16 }, { label: 'Pannes tolérées', kind: 'num', a: 2 }], corr: '<p>RAID 6 = double parité : (6 − 2) × 4 = <b>16 To</b> ; <b>2</b> disques peuvent tomber en panne simultanément.</p>' },
+          { q: '<b>Q8 b.</b> Complète le dimanche à 23 h, incrémentielles du lundi au samedi à 23 h. Le serveur tombe en panne jeudi à 10 h. Combien d\'incrémentielles restaurer après la complète ? Combien d\'heures de données perdues ?', pts: 1.5, fields: [{ label: 'Incrémentielles', kind: 'num', a: 3 }, { label: 'Heures perdues', kind: 'num', a: 11 }], corr: '<p>Complète du dimanche + incrémentielles de <b>lundi, mardi et mercredi</b> (3), dans l\'ordre. Perte : de mercredi 23 h à jeudi 10 h = <b>11 h</b>.</p>' },
+          { q: '<b>Q8 c.</b> Énonce la règle 3-2-1 et applique-la à la direction de Zinder.', pts: 1, corr: '<p><b>3</b> copies des données, sur <b>2</b> supports différents, dont <b>1</b> hors site. Ex. : données du serveur + sauvegarde sur NAS local + copie chiffrée hebdomadaire au siège de Niamey (ou disque externe dans un coffre hors du bâtiment).</p>' },
+          { q: '<b>Q8 d.</b> Un collègue affirme que les snapshots quotidiens des VM suffisent comme sauvegarde. Réponds-lui.', pts: 1, corr: '<p>Faux : un snapshot reste sur le <b>même stockage</b> que la VM (perdu avec lui), dépend du disque d\'origine et dégrade les performances s\'il est conservé. Il sert avant une mise à jour ; une vraie sauvegarde est <b>indépendante</b>, sur un autre support et hors site.</p>' }
+        ]
+      }
+    ]
+  };
+
+  const maradi = {
+    id: 'maradi',
+    title: 'Sujet blanc C — Maradi',
+    sub: 'Épreuves 1 et 2 · 2 h · Partie I (réseaux et télécoms) 24 points → note E2 ; Partie II (systèmes) 16 points → note E1.',
+    minutes: 120,
+    theme: 'Direction régionale du Budget : calcul /27, découpage, agrégation, table de routage, TCP, DMZ, E1, Nyquist ; droits Linux, script, délégation AD, NTFS/partage, différentielles.',
+    context: `<p><b>Contexte.</b> La <b>Direction régionale du Budget de Maradi</b> (6 services, 140 agents) modernise son réseau : nouveau découpage du LAN 192.168.50.0/24, routeur relié au siège et à l'antenne de <b>Tessaoua</b> (15 km), serveur web public en DMZ, téléphonie sur une liaison E1. Le domaine AD <i>budget.exemple.ne</i> est géré depuis Niamey. Tu es l'administrateur systèmes et réseaux de la direction.</p>
+<p class="small muted">Gestion du temps conseillée : Partie I : 55 min · Partie II : 35 min · relecture : 10 min.</p>`,
+    sections: [
+      {
+        id: 'I', title: 'PARTIE I — Réseaux et télécommunications', max: 24, note: 'Note E2 = Partie I × 20 / 24',
+        items: [
+          { q: '<b>Q1 a.</b> Un poste a l\'adresse 192.168.50.77/27. Adresse du réseau, adresse de broadcast, nombre d\'hôtes utilisables ?', pts: 1.5, fields: [{ label: 'Réseau', kind: 'ip', a: '192.168.50.64' }, { label: 'Broadcast', kind: 'ip', a: '192.168.50.95' }, { label: 'Hôtes', kind: 'num', a: 30 }], corr: '<p>/27 → bloc de 32 dans le 4<sup>e</sup> octet ; 77 est entre 64 et 95 → réseau <b>192.168.50.64</b>, broadcast <b>192.168.50.95</b>, 2<sup>5</sup> − 2 = <b>30</b> hôtes.</p>' },
+          { q: '<b>Q1 b.</b> On découpe 192.168.50.0/24 en sous-réseaux de même taille pour 6 services de 25 postes au plus (passerelle comprise). Masque, nombre de sous-réseaux obtenus, et adresse du 4<sup>e</sup> sous-réseau ?', pts: 3, fields: [{ label: 'Masque', kind: 'mask', a: '255.255.255.224' }, { label: 'Nombre de sous-réseaux', kind: 'num', a: 8 }, { label: '4e sous-réseau', kind: 'cidr', a: '192.168.50.96/27' }], corr: '<p>25 + 2 = 27 → 32 adresses → <b>/27</b> = <b>255.255.255.224</b> (3 bits empruntés → 2<sup>3</sup> = <b>8</b> sous-réseaux de 30 hôtes). Sous-réseaux : .0, .32, .64, <b>.96</b>, .128… → 4<sup>e</sup> = <b>192.168.50.96/27</b>.</p>' },
+          { q: '<b>Q1 c.</b> Le siège annonce 172.20.8.0/24, 172.20.9.0/24, 172.20.10.0/24 et 172.20.11.0/24. Route agrégée la plus précise ?', pts: 1.5, fields: [{ kind: 'cidr', a: '172.20.8.0/22' }], corr: '<p>3<sup>e</sup> octet : 8 = 000010<b>00</b>, 11 = 000010<b>11</b> → 6 bits communs → 16 + 6 = <b>/22</b> : <b>172.20.8.0/22</b> (exactement les 4 réseaux).</p>' },
+          { q: '<b>Q1 d.</b> Un poste affiche l\'adresse 169.254.12.5. Que s\'est-il passé ? Que vérifier ?', pts: 1, corr: '<p>Adresse <b>APIPA</b> : le poste n\'a reçu aucune réponse DHCP. Vérifier le câble/le VLAN du port, le serveur DHCP (pool épuisé ?), le relais <code>ip helper-address</code> sur la passerelle.</p>' },
+          { q: '<b>Q2 a.</b> Table de R-MARADI : 0.0.0.0/0 via R-ISP ; 10.0.0.0/8 via R1 (OSPF) ; 10.40.0.0/16 via R2 (statique) ; 10.40.12.0/24 via R3 (OSPF). Quel routeur suivant pour chaque destination ?', pts: 2, fields: [{ label: '10.40.12.9', kind: 'select', opts: ['R-ISP', 'R1', 'R2', 'R3'], a: 3 }, { label: '10.40.200.1', kind: 'select', opts: ['R-ISP', 'R1', 'R2', 'R3'], a: 2 }, { label: '10.99.1.1', kind: 'select', opts: ['R-ISP', 'R1', 'R2', 'R3'], a: 1 }, { label: '41.203.5.5', kind: 'select', opts: ['R-ISP', 'R1', 'R2', 'R3'], a: 0 }], corr: '<p><b>Plus long préfixe</b> d\'abord : 10.40.12.9 → /24 → <b>R3</b> ; 10.40.200.1 → /16 → <b>R2</b> ; 10.99.1.1 → /8 → <b>R1</b> ; 41.203.5.5 → route par défaut → <b>R-ISP</b>. (La distance administrative ne départage que des préfixes identiques.)</p>' },
+          { q: '<b>Q2 b.</b> Le même préfixe 10.50.0.0/16 est appris par RIP, OSPF et EIGRP (interne). Lequel est installé ?', pts: 1.5, fields: [{ kind: 'select', opts: ['RIP (120)', 'OSPF (110)', 'EIGRP interne (90)', 'Les trois en partage de charge'], a: 2 }], corr: '<p>Même préfixe → plus petite <b>distance administrative</b> : EIGRP interne <b>90</b> &lt; OSPF 110 &lt; RIP 120.</p>' },
+          { q: '<b>Q2 c.</b> Pourquoi RIP ne conviendrait-il pas pour relier toutes les directions régionales ?', pts: 1, corr: '<p>Métrique = nombre de sauts (ignore le débit : un lien satellite « vaut » une fibre), <b>15 sauts maximum</b>, convergence lente (mises à jour toutes les 30 s, boucles possibles). OSPF (coût selon le débit, convergence rapide, aires) est préférable.</p>' },
+          { q: '<b>Q3 a.</b> Ouverture TCP : le client envoie SYN avec seq = 1000 ; le serveur répond SYN-ACK avec seq = 5000. Valeur ACK du SYN-ACK ? Valeur ACK du dernier segment du client ?', pts: 2, fields: [{ label: 'ACK du SYN-ACK', kind: 'num', a: 1001 }, { label: 'ACK du client', kind: 'num', a: 5001 }], corr: '<p>Le SYN consomme 1 numéro : SYN-ACK (seq 5000, <b>ack 1001</b>) puis ACK (seq 1001, <b>ack 5001</b>).</p>' },
+          { q: '<b>Q3 b.</b> Ports par défaut : SMTP, IMAPS, RDP.', pts: 1.5, fields: [{ label: 'SMTP', kind: 'num', a: 25 }, { label: 'IMAPS', kind: 'num', a: 993 }, { label: 'RDP', kind: 'num', a: 3389 }], corr: '<p>SMTP <b>25</b> (587 en soumission) · IMAPS <b>993</b> · RDP <b>3389</b> (TCP).</p>' },
+          { q: '<b>Q3 c.</b> L\'imprimante du service Paie doit toujours garder la même adresse. Deux solutions ?', pts: 1, corr: '<p>Une <b>réservation DHCP</b> (adresse liée à la MAC de l\'imprimante) ou une <b>adresse fixe</b> exclue du pool DHCP (plage d\'exclusion).</p>' },
+          { q: '<b>Q4 a.</b> Le serveur web public est placé en DMZ derrière le pare-feu. Donne les 4 règles essentielles (Internet → DMZ, Internet → LAN, LAN → DMZ, DMZ → LAN).', pts: 2, corr: table(['Flux', 'Règle'], [['Internet → DMZ', 'Autoriser TCP 443 (et 80 redirigé) vers le serveur web uniquement'], ['Internet → LAN', 'Tout refuser (seules les réponses des connexions établies reviennent)'], ['LAN → DMZ', 'Autoriser l\'administration (SSH 22) depuis le poste des admins'], ['DMZ → LAN', 'Refuser : un serveur web compromis ne doit pas atteindre le LAN']]) + '<p>Principe : tout ce qui n\'est pas explicitement autorisé est refusé.</p>' },
+          { q: '<b>Q4 b.</b> HTTPS utilise-t-il un chiffrement symétrique ou asymétrique ? Explique le rôle de chacun.', pts: 1.5, corr: '<p>Les <b>deux</b> : l\'asymétrique (certificat RSA/ECDSA, échange de clés ECDHE) authentifie le serveur et établit une clé de session ; le <b>symétrique</b> (AES) chiffre ensuite les données, car il est beaucoup plus rapide.</p>' },
+          { q: '<b>Q4 c.</b> Quelle fonction du commutateur empêche un faux serveur DHCP branché par un employé de distribuer des adresses ?', pts: 1, fields: [{ kind: 'select', opts: ['Port security', 'DHCP snooping', 'BPDU guard', 'VLAN natif'], a: 1 }], corr: '<p><b>DHCP snooping</b> : seuls les ports déclarés « de confiance » (vers le vrai serveur ou le routeur) peuvent envoyer des réponses DHCP (Offer/Ack).</p>' },
+          { q: '<b>Q5 a.</b> La téléphonie utilise une liaison E1. Débit d\'un intervalle de temps (IT) en kbit/s ? Nombre de communications téléphoniques simultanées ?', pts: 2, fields: [{ label: 'Débit d\'un IT (kbit/s)', kind: 'num', a: 64 }, { label: 'Communications', kind: 'num', a: 30 }], corr: '<p>E1 = 32 IT × <b>64 kbit/s</b> = 2,048 Mbit/s ; IT0 = synchronisation, IT16 = signalisation → <b>30</b> communications.</p>' },
+          { q: '<b>Q5 b.</b> Débit maximal de Nyquist d\'un canal sans bruit de 3 100 Hz avec une modulation à 16 niveaux, en bit/s ?', pts: 1.5, fields: [{ kind: 'num', a: 24800 }], corr: '<p>D = 2 × B × log₂(M) = 2 × 3 100 × 4 = <b>24 800 bit/s</b>.</p>' }
+        ]
+      },
+      {
+        id: 'II', title: 'PARTIE II — Administration des systèmes', max: 16, note: 'Note E1 = Partie II × 20 / 16 — rappel : note ≤ 5 éliminatoire',
+        items: [
+          { q: '<b>Q6 a.</b> <code>-rw-r----- 1 amina budget 4096 rapport.ods</code> : valeur octale ? Qui peut lire le fichier ?', pts: 1.5, fields: [{ label: 'Octal', kind: 'text', a: '640' }], corr: '<p>rw- r-- --- = <b>640</b> : amina lit et écrit, les membres du groupe <b>budget</b> lisent, les autres n\'ont aucun accès (root aussi, bien sûr).</p>' },
+          { q: '<b>Q6 b.</b> Commandes : créer amina (groupe principal budget, groupe secondaire compta, dossier personnel) ; verrouiller le compte de moussa (en congé) ; obliger amina à changer son mot de passe à la prochaine connexion.', pts: 1.5, corr: code(`useradd -m -s /bin/bash -g budget -G compta amina
+passwd amina
+usermod -L moussa        # ou passwd -l moussa
+chage -d 0 amina`) },
+          { q: '<b>Q6 c.</b> Ligne de crontab : toutes les 15 minutes, de 8 h à 18 h, du lundi au vendredi (les 5 champs).', pts: 1, fields: [{ kind: 'cron', a: '*/15 8-18 * * 1-5', wide: true, ph: 'min heure jm mois js' }], corr: '<p><code>*/15 8-18 * * 1-5 /opt/verif.sh</code></p>' },
+          { q: '<b>Q6 d.</b> Script bash : pour chaque nom du fichier /root/nouveaux.txt (un par ligne), créer l\'utilisateur s\'il n\'existe pas encore, sinon afficher « déjà présent ».', pts: 2, corr: code(`#!/bin/bash
+while read -r nom; do
+  [ -z "$nom" ] && continue
+  if id "$nom" &>/dev/null; then
+    echo "$nom : déjà présent"
+  else
+    useradd -m -s /bin/bash "$nom" && echo "$nom : créé"
+  fi
+done < /root/nouveaux.txt`) + '<p>Barème : boucle de lecture (0,5), test d\'existence (0,5), création (0,5), messages et guillemets (0,5).</p>' },
+          { q: '<b>Q7 a.</b> Le technicien de Maradi doit pouvoir réinitialiser les mots de passe des utilisateurs de Maradi, et seulement eux. Comment faire sans le mettre dans « Admins du domaine » ?', pts: 1.5, corr: '<p>Placer les comptes de Maradi dans une <b>OU Maradi</b> et utiliser l\'assistant de <b>délégation de contrôle</b> sur cette OU : tâche « Réinitialiser les mots de passe et forcer le changement », accordée à un groupe (ex. GG_Tech_Maradi) dont le technicien est membre. Principe du moindre privilège.</p>' },
+          { q: '<b>Q7 b.</b> Dossier \\\\SRV-MRD\\Budget : NTFS Lecture pour « Utilisateurs », NTFS Modification pour GG_Budget ; partage : Contrôle total pour « Tout le monde ». Amina (membre de GG_Budget) accède par le réseau : droits effectifs ?', pts: 1.5, fields: [{ kind: 'select', opts: ['Contrôle total', 'Modification', 'Lecture', 'Aucun'], a: 1 }], corr: '<p>NTFS cumulés : Lecture + Modification = Modification ; partage = Contrôle total ; par le réseau → le plus restrictif = <b>Modification</b>. (Bonne pratique : partage large, droits fins en NTFS.)</p>' },
+          { q: '<b>Q7 c.</b> Un nouveau poste n\'arrive pas à rejoindre le domaine ; sa configuration DNS pointe vers 8.8.8.8. Pourquoi ? Correction ?', pts: 1, corr: '<p>Le poste trouve les DC grâce aux enregistrements <b>SRV</b> (_ldap._tcp…) de la zone AD, que seul le <b>DNS interne</b> connaît. Mettre le DNS du poste sur les contrôleurs de domaine (via DHCP option 6) ; les DC redirigent eux-mêmes vers Internet.</p>' },
+          { q: '<b>Q7 d.</b> À quoi sert WSUS ?', pts: 1, corr: '<p><b>Windows Server Update Services</b> : centraliser les mises à jour Microsoft (téléchargées une fois depuis Internet, approuvées puis distribuées aux postes via GPO) : économie de bande passante et contrôle des déploiements.</p>' },
+          { q: '<b>Q8 a.</b> Deux disques de 1 To : capacité utile en RAID 1 ? En RAID 0 ? Lequel protège d\'une panne de disque ?', pts: 1.5, fields: [{ label: 'RAID 1 (To)', kind: 'num', a: 1 }, { label: 'RAID 0 (To)', kind: 'num', a: 2 }], corr: '<p>RAID 1 (miroir) : <b>1 To</b>, tolère 1 panne. RAID 0 (agrégat) : <b>2 To</b>, aucune tolérance (une panne = tout perdu) : il ne protège rien.</p>' },
+          { q: '<b>Q8 b.</b> Complète le vendredi à 20 h, différentielle chaque soir à 20 h. Panne le mardi à 12 h. Combien de jeux de sauvegarde restaurer ? Heures de données perdues ?', pts: 2, fields: [{ label: 'Jeux à restaurer', kind: 'num', a: 2 }, { label: 'Heures perdues', kind: 'num', a: 16 }], corr: '<p>Complète du vendredi + <b>dernière différentielle</b> (lundi 20 h) = <b>2</b> jeux. Perte : de lundi 20 h à mardi 12 h = <b>16 h</b>.</p>' },
+          { q: '<b>Q8 c.</b> La direction exige un RPO de 4 h et un RTO de 2 h pour le serveur de fichiers. Conséquences techniques ?', pts: 1.5, corr: '<p><b>RPO 4 h</b> : sauvegarder au moins toutes les 4 h (incrémentielles/snapshots planifiés, réplication). <b>RTO 2 h</b> : restauration rapide → serveur virtualisé avec sauvegarde d\'image complète, matériel ou hôte de secours prêt, procédure testée ; une restauration depuis bande hors site ne tiendrait pas les 2 h.</p>' }
+        ]
+      }
+    ]
+  };
+
+  const ex = App.content.extras;
+  if (ex.examBlanc && !ex.examBlanc.id) ex.examBlanc.id = 'agadez';
+  if (ex.examBlanc && !ex.examBlanc.theme) ex.examBlanc.theme = 'Direction régionale : VLSM, VLAN, routage statique, DHCP, IPsec, VSAT/TCP, VoIP, faisceau hertzien ; Linux, RODC, GPO, AGDLP, RAID, sauvegardes.';
+  ex.examBlancs = [ex.examBlanc, zinder, maradi].filter(Boolean);
+})();
+
+</script>
   <!-- Contrôleurs -->
   <script>
 /* js/controllers/runner.js */
@@ -11749,7 +11900,11 @@ fi`) },
     App.ui.mount(`
       <div class="page-head"><h1>📝 Examen blanc</h1><div class="sub">Mets-toi en conditions réelles : téléphone en silencieux, pas de notes, pas de calculatrice. Note finale = (2 × E1 + 3 × E2) / 5, avec <b>note ≤ 5 éliminatoire</b>.</div></div>
       <div class="grid c2">
-        ${blanc ? `<a class="card hover" href="#/examen/blanc" style="color:inherit;text-decoration:none;border-top:4px solid var(--primary)"><h3>📄 ${blanc.title}</h3><p class="small muted">Sujet complet de la séance 9 : étude de cas Agadez — réseaux, télécoms, Linux, Windows, sauvegardes. ${blanc.minutes} min. Tu rédiges, puis tu t'auto-évalues avec le barème officiel.</p><span class="chip pri">${blanc.minutes} min · 40 pts</span></a>` : ''}
+        ${(App.content.extras.examBlancs || (blanc ? [blanc] : [])).map((b, i) => {
+          const done = App.store.state.exams.filter((x) => x.kind === b.title);
+          const best = done.length ? Math.max(...done.map((x) => x.avg)) : null;
+          return `<a class="card hover" href="#/examen/blanc/${b.id || ''}" style="color:inherit;text-decoration:none;border-top:4px solid ${['var(--primary)', '#0ea5e9', '#16a34a'][i % 3]}"><h3>📄 ${b.title}</h3><p class="small muted">${i === 0 ? 'Sujet de la séance 9 du plan. ' : ''}${b.theme || ''} Tu rédiges sur papier, puis tu t'auto-évalues avec le barème.</p><span class="chip pri">${b.minutes} min · 40 pts</span>${best != null ? ` <span class="chip ok">meilleure moyenne ${U.fmtNum(best, 2)}</span>` : ''}</a>`;
+        }).join('')}
         <a class="card hover" href="#/examen/express" style="color:inherit;text-decoration:none;border-top:4px solid var(--accent)"><h3>⚡ Examen express auto-corrigé</h3><p class="small muted">30 questions tirées au sort (QCM + calculs générés) : 18 pour l'Épreuve 2, 12 pour l'Épreuve 1. Corrigé automatiquement, toujours différent.</p><span class="chip acc">35 min · 30 questions</span></a>
         <a class="card hover" href="#/examen/express?part=e2" style="color:inherit;text-decoration:none"><h3>🌐 Mini-épreuve 2 (réseaux)</h3><p class="small muted mb0">20 questions · 25 min</p></a>
         <a class="card hover" href="#/examen/express?part=e1" style="color:inherit;text-decoration:none"><h3>🖥️ Mini-épreuve 1 (systèmes)</h3><p class="small muted mb0">15 questions · 20 min — sécurise la note éliminatoire.</p></a>
@@ -11874,8 +12029,9 @@ fi`) },
   }
 
   /* ---------- Sujet blanc (séance 9) ---------- */
-  R.add('/examen/blanc', () => {
-    const ex = App.content.extras.examBlanc;
+  R.add('/examen/blanc', () => R.go('/examen/blanc/' + ((App.content.extras.examBlanc || {}).id || 'agadez')));
+  R.add('/examen/blanc/:id', (p) => {
+    const ex = (App.content.extras.examBlancs || []).find((b) => b.id === p.id) || App.content.extras.examBlanc;
     if (!ex) return R.go('/examen');
     App.layout.setTitle('Sujet blanc');
     const grades = {};
@@ -11883,7 +12039,7 @@ fi`) },
     const v = App.ui.mount(`
       ${App.ui.crumbs([['Examen', '#/examen'], ['Sujet blanc']])}
       <div class="page-head"><h1>📄 ${ex.title}</h1><div class="sub">${ex.sub}</div></div>
-      <div class="card" style="position:sticky;top:.5rem;z-index:5"><div class="row between"><span class="timer" id="tm">${U.fmtDuration(left)}</span><span class="small muted" id="phaseLbl">Phase 1 : rédaction (corrigés masqués)</span><button class="btn sm primary" id="go">▶ Démarrer le chrono</button><button class="btn sm accent" id="end">Terminer → corriger</button></div></div>
+      <div class="card blanc-bar"><div class="row between"><span class="timer" id="tm">${U.fmtDuration(left)}</span><span class="small muted" id="phaseLbl">Phase 1 : rédaction (corrigés masqués)</span><button class="btn sm primary" id="go">▶ Démarrer le chrono</button><button class="btn sm accent" id="end">Terminer → corriger</button></div></div>
       <div class="card mt2 prose">${ex.context}</div>
       <div id="secs" class="exam-locked"></div>
       <div id="result" class="mt2"></div>`, { help: 'examen' });
@@ -11934,7 +12090,7 @@ fi`) },
         ${verdict(e1, e2).html}
         <div class="center mt2"><button class="btn primary" id="saveEx" ${n < total ? 'disabled' : ''}>💾 Enregistrer le résultat</button>${n < total ? '<div class="tiny muted mt1">Note toutes les questions pour enregistrer.</div>' : ''}</div></div>`;
       const b = out.querySelector('#saveEx');
-      b.addEventListener('click', () => { saveResult('Sujet blanc', e1, e2); b.disabled = true; b.textContent = '✓ Enregistré'; App.fx.confetti(0.8); });
+      b.addEventListener('click', () => { saveResult(ex.title, e1, e2); b.disabled = true; b.textContent = '✓ Enregistré'; App.fx.confetti(0.8); });
     }
   });
 })();

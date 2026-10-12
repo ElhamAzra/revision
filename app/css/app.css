@@ -629,6 +629,15 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .defi-vs span { color: var(--muted); font-family: var(--mono); font-size: .85rem; }
 .defi-vs .vs { font-family: var(--font-display); font-weight: 800; color: var(--accent); font-size: 1.2rem; }
 
+.blanc-bar { position: sticky; top: .5rem; z-index: 5; }
+:root[data-nav="mobile"] .blanc-bar { top: calc(58px + env(safe-area-inset-top)); padding: .55rem .7rem; }
+@media (max-width: 600px) {
+  .blanc-bar .row { flex-wrap: nowrap; gap: .4rem; }
+  .blanc-bar #phaseLbl { display: none; }
+  .blanc-bar .btn { padding: .35rem .6rem; font-size: .8rem; min-height: 2.1rem; }
+  .blanc-bar .timer { font-size: 1rem; padding: .2rem .5rem; }
+}
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);

@@ -42,7 +42,11 @@
     App.ui.mount(`
       <div class="page-head"><h1>📝 Examen blanc</h1><div class="sub">Mets-toi en conditions réelles : téléphone en silencieux, pas de notes, pas de calculatrice. Note finale = (2 × E1 + 3 × E2) / 5, avec <b>note ≤ 5 éliminatoire</b>.</div></div>
       <div class="grid c2">
-        ${blanc ? `<a class="card hover" href="#/examen/blanc" style="color:inherit;text-decoration:none;border-top:4px solid var(--primary)"><h3>📄 ${blanc.title}</h3><p class="small muted">Sujet complet de la séance 9 : étude de cas Agadez — réseaux, télécoms, Linux, Windows, sauvegardes. ${blanc.minutes} min. Tu rédiges, puis tu t'auto-évalues avec le barème officiel.</p><span class="chip pri">${blanc.minutes} min · 40 pts</span></a>` : ''}
+        ${(App.content.extras.examBlancs || (blanc ? [blanc] : [])).map((b, i) => {
+          const done = App.store.state.exams.filter((x) => x.kind === b.title);
+          const best = done.length ? Math.max(...done.map((x) => x.avg)) : null;
+          return `<a class="card hover" href="#/examen/blanc/${b.id || ''}" style="color:inherit;text-decoration:none;border-top:4px solid ${['var(--primary)', '#0ea5e9', '#16a34a'][i % 3]}"><h3>📄 ${b.title}</h3><p class="small muted">${i === 0 ? 'Sujet de la séance 9 du plan. ' : ''}${b.theme || ''} Tu rédiges sur papier, puis tu t'auto-évalues avec le barème.</p><span class="chip pri">${b.minutes} min · 40 pts</span>${best != null ? ` <span class="chip ok">meilleure moyenne ${U.fmtNum(best, 2)}</span>` : ''}</a>`;
+        }).join('')}
         <a class="card hover" href="#/examen/express" style="color:inherit;text-decoration:none;border-top:4px solid var(--accent)"><h3>⚡ Examen express auto-corrigé</h3><p class="small muted">30 questions tirées au sort (QCM + calculs générés) : 18 pour l'Épreuve 2, 12 pour l'Épreuve 1. Corrigé automatiquement, toujours différent.</p><span class="chip acc">35 min · 30 questions</span></a>
         <a class="card hover" href="#/examen/express?part=e2" style="color:inherit;text-decoration:none"><h3>🌐 Mini-épreuve 2 (réseaux)</h3><p class="small muted mb0">20 questions · 25 min</p></a>
         <a class="card hover" href="#/examen/express?part=e1" style="color:inherit;text-decoration:none"><h3>🖥️ Mini-épreuve 1 (systèmes)</h3><p class="small muted mb0">15 questions · 20 min — sécurise la note éliminatoire.</p></a>
@@ -167,8 +171,9 @@
   }
 
   /* ---------- Sujet blanc (séance 9) ---------- */
-  R.add('/examen/blanc', () => {
-    const ex = App.content.extras.examBlanc;
+  R.add('/examen/blanc', () => R.go('/examen/blanc/' + ((App.content.extras.examBlanc || {}).id || 'agadez')));
+  R.add('/examen/blanc/:id', (p) => {
+    const ex = (App.content.extras.examBlancs || []).find((b) => b.id === p.id) || App.content.extras.examBlanc;
     if (!ex) return R.go('/examen');
     App.layout.setTitle('Sujet blanc');
     const grades = {};
@@ -176,7 +181,7 @@
     const v = App.ui.mount(`
       ${App.ui.crumbs([['Examen', '#/examen'], ['Sujet blanc']])}
       <div class="page-head"><h1>📄 ${ex.title}</h1><div class="sub">${ex.sub}</div></div>
-      <div class="card" style="position:sticky;top:.5rem;z-index:5"><div class="row between"><span class="timer" id="tm">${U.fmtDuration(left)}</span><span class="small muted" id="phaseLbl">Phase 1 : rédaction (corrigés masqués)</span><button class="btn sm primary" id="go">▶ Démarrer le chrono</button><button class="btn sm accent" id="end">Terminer → corriger</button></div></div>
+      <div class="card blanc-bar"><div class="row between"><span class="timer" id="tm">${U.fmtDuration(left)}</span><span class="small muted" id="phaseLbl">Phase 1 : rédaction (corrigés masqués)</span><button class="btn sm primary" id="go">▶ Démarrer le chrono</button><button class="btn sm accent" id="end">Terminer → corriger</button></div></div>
       <div class="card mt2 prose">${ex.context}</div>
       <div id="secs" class="exam-locked"></div>
       <div id="result" class="mt2"></div>`, { help: 'examen' });
@@ -227,7 +232,7 @@
         ${verdict(e1, e2).html}
         <div class="center mt2"><button class="btn primary" id="saveEx" ${n < total ? 'disabled' : ''}>💾 Enregistrer le résultat</button>${n < total ? '<div class="tiny muted mt1">Note toutes les questions pour enregistrer.</div>' : ''}</div></div>`;
       const b = out.querySelector('#saveEx');
-      b.addEventListener('click', () => { saveResult('Sujet blanc', e1, e2); b.disabled = true; b.textContent = '✓ Enregistré'; App.fx.confetti(0.8); });
+      b.addEventListener('click', () => { saveResult(ex.title, e1, e2); b.disabled = true; b.textContent = '✓ Enregistré'; App.fx.confetti(0.8); });
     }
   });
 })();
