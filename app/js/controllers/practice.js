@@ -14,6 +14,7 @@
       <div class="page-head"><h1>🎯 Entraînement</h1><div class="sub">S'entraîner à se rappeler (et pas seulement relire) : c'est la méthode la plus efficace pour retenir.</div></div>
       <div class="grid c2">
         <a class="card hover" href="#/quiz/mix" style="color:inherit;text-decoration:none;background:linear-gradient(135deg,var(--primary-soft),var(--surface))"><h3>🎲 Mélange intelligent</h3><p class="small muted mb0">15 questions qui mélangent tes erreurs, tes modules faibles et les séances déjà vues. L'alternance des thèmes imite le jour J.</p></a>
+        <a class="card hover" href="#/defi" style="color:inherit;text-decoration:none;background:linear-gradient(135deg,var(--accent-soft),var(--surface))"><h3>⚔️ Défi entre amis</h3><p class="small muted mb0">Un code, les mêmes questions pour toi et tes amis, même sans Internet. Qui fera le meilleur score ?</p></a>
         <a class="card hover" href="#/erreurs" style="color:inherit;text-decoration:none"><h3>🩹 Carnet d'erreurs</h3><p class="small muted mb0">${Object.keys(st.errors).length} erreur(s) en attente. Une erreur sort du carnet après 2 bonnes réponses d'affilée.</p></a>
       </div>
 

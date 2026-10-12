@@ -613,6 +613,22 @@ input, select, textarea { font-family: inherit; font-size: 1rem; font-weight: 60
 .tts-b:hover { border-color: var(--primary); color: var(--primary); }
 .tts-rate { width: auto; padding: 0 .5rem; font-family: var(--font-display); font-weight: 700; font-size: .8rem; }
 
+/* Défi entre amis */
+.defi-formats { display: grid; gap: .5rem; }
+.defi-f { display: flex; gap: .8rem; align-items: center; text-align: left; padding: .7rem .85rem; border-radius: 14px; border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: border-color .15s, background .15s; }
+.defi-f:hover { border-color: var(--accent); background: var(--accent-soft); }
+.defi-f .e { font-size: 1.6rem; }
+.defi-f b { display: block; font-family: var(--font-display); font-weight: 600; }
+.defi-f small { display: block; color: var(--muted); font-size: .8rem; }
+.defi-code { display: inline-block; margin-top: .6rem; padding: .5rem 1rem; border-radius: 14px; font-size: clamp(1.15rem, 1rem + 1vw, 1.6rem); font-weight: 800; letter-spacing: .06em; background: var(--surface-3); border: 2px dashed var(--border-strong); user-select: all; overflow-wrap: anywhere; }
+.defi-share { justify-content: center; }
+.defi-vs { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+.defi-vs > div:not(.vs) { min-width: 8.5rem; padding: .8rem 1rem; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border); display: flex; flex-direction: column; }
+.defi-vs small { color: var(--muted); font-weight: 700; font-size: .78rem; }
+.defi-vs b { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
+.defi-vs span { color: var(--muted); font-family: var(--mono); font-size: .85rem; }
+.defi-vs .vs { font-family: var(--font-display); font-weight: 800; color: var(--accent); font-size: 1.2rem; }
+
 /* ---------- Generic components ---------- */
 .card {
   background: var(--surface);

@@ -129,6 +129,7 @@
         if (n >= 10 && ok === n) App.game.award('perfect');
         const summary = { n, ok, pct, xp: S.xp, maxCombo: S.maxCombo, secs, results: S.results, score: S.score };
         if (opts.onFinish) opts.onFinish(summary);
+        if (opts.onDone) { App.fx.sound('end'); App.ui.setFocus(false); window.scrollTo(0, 0); opts.onDone(summary); return; }
         App.fx.sound('end');
         if (pct >= 0.8 && n >= 5) App.fx.confetti(0.8);
         const emoji = n === 0 ? '👋' : pct >= 0.9 ? '🏆' : pct >= 0.7 ? '🎉' : pct >= 0.5 ? '💪' : '📚';
