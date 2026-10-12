@@ -228,7 +228,7 @@ input, select, textarea { font-family: inherit; font-size: 1rem; color: var(--te
 .stack-sm > * + * { margin-top: .5rem; }
 .row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
 .row.between { justify-content: space-between; }
-.row.nowrap { flex-wrap: nowrap; }
+.row.nowrap { flex-wrap: nowrap; white-space: normal; }
 .grow { flex: 1; min-width: 0; }
 .grid { display: grid; gap: 1rem; }
 .grid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -468,6 +468,7 @@ table.t td.mono, table.t .mono { white-space: nowrap; }
   background: var(--surface); border: 1px solid var(--border); border-radius: 13px;
   box-shadow: inset 0 0 0 3px var(--surface-2);
 }
+.f .f-body { text-align: center; line-height: 1.6; max-width: 100%; overflow-wrap: anywhere; }
 .f .lbl-f { font-family: var(--font); font-size: .75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; width: 100%; text-align: center; margin-top: -.2rem; }
 .fi { font-family: "Cambria Math", "STIX Two Math", Cambria, Georgia, serif; font-size: 1.08em; white-space: nowrap; }
 .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 .15em; line-height: 1.15; }
@@ -578,7 +579,8 @@ table.t td.mono, table.t .mono { white-space: nowrap; }
 .corr > :last-child { margin-bottom: 0; }
 .part { padding: 1rem 0; border-bottom: 1px solid var(--border); }
 .part:last-child { border-bottom: 0; }
-.part .pts { font-size: .78rem; font-weight: 800; color: var(--primary); }
+.part .prose { min-width: 0; overflow-wrap: anywhere; }
+.part .pts { margin-left: .6rem; font-size: .78rem; font-weight: 800; color: var(--primary); }
 
 .exam-locked [data-corr], .exam-locked [data-check], .exam-locked [data-gotlbl] { display: none !important; }
 

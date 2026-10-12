@@ -18,7 +18,7 @@
     why: box('ex', '🤔', 'Pourquoi ?'),
 
     /* Formule mise en valeur : f('Hôtes = 2<sup>h</sup> − 2', 'nombre d’hôtes') */
-    f: (html, label) => `<div class="f">${html}${label ? `<div class="lbl-f">${label}</div>` : ''}</div>`,
+    f: (html, label) => `<div class="f"><span class="f-body">${html}</span>${label ? `<div class="lbl-f">${label}</div>` : ''}</div>`,
     fi: (html) => `<span class="fi">${html}</span>`,
     frac: (num, den) => `<span class="frac"><span>${num}</span><span>${den}</span></span>`,
 
